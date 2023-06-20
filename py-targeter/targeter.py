@@ -37,9 +37,6 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 
 class Targeter():
     def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, **optbinning_kwargs):
-
-        self.target = target
-
         # retrieve dataframe name from call and store it in ouput 'data' slot
         frame = inspect.currentframe()
         dfname=''
@@ -50,7 +47,7 @@ class Targeter():
         finally:
             del frame
         self.data = dfname
-
+        self.target = target
         # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
@@ -112,8 +109,8 @@ class Targeter():
         # post operations
 
         # build all binning tables
-        for ivar in all_optb._binned_variables:
-            all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
+        #for ivar in all_optb._binned_variables:
+        #    all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
         self.profiles = all_optb    
 
