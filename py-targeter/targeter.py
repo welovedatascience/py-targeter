@@ -1,7 +1,8 @@
 #import optbinning
 import pandas as pd
 from optbinning import BinningProcess
-
+import inspect
+import numpy as np
 
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
@@ -34,11 +35,18 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 
 
 
-class Targeter(data, target, target_type, variable_names, categorical_variables):
-    def __init__(data:pd.DataFrame, target:str, select_vars = None, exclude_vars = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, **optbinning_kwargs):
-        self.data = data
+class Targeter():
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, **optbinning_kwargs):
         self.target = target
-        self.variable_names = variable_names
+        frame = inspect.currentframe()
+        dfname=''
+        try:
+	        for var, val in frame.f_back.f_locals.items():
+	            if val is data:
+		            dfname = var
+        finally:
+	        del frame
+        self.data = dfname
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
             if (target_type in ['categorical_num','categorical_str']):
@@ -48,7 +56,7 @@ class Targeter(data, target, target_type, variable_names, categorical_variables)
                 if target_reference_level is None:
                     target_reference_level = 1
                 # <TODO> recode in numeric
-                self.data['target'] = (self.data['target'] == True).astype(int)
+                data['target'] = (data['target'] == True).astype(int)
 
 
             if (target_type in ['binary_num']):
@@ -66,40 +74,37 @@ class Targeter(data, target, target_type, variable_names, categorical_variables)
                 
                 if type(data[target].values[0]) == str:
                     #recodage
-                    vals = list(set(data[target].values))
-                    a0 = data.loc[data[target] == vals[0]][target].count()
-                    a1 = data.loc[data[target] == vals[1]][target].count()
-                    if a0 < a1:
-                        target_reference_level = vals[0]
-                    else:
-                        target_reference_level = vals[1]
+                    target_reference_level = data[target].value_count().index[0]
                 else: # type(data[target].values[0]) == float or type(data[target].values[0]) == int or type(data[target].values[0]) == bool
                     target_reference_level = max(data[target].dropna().values)
             self.target_reference_level = target_reference_level
-            self.data[target] = (self.data[target] == target_reference_level).astype(int)
+            data[target] = (data[target] == target_reference_level).astype(int)
             print("the reference level has been defined as:{}".format(target_reference_level))
-       
-                
-
-
 
 #            if type(format_target) == str:,
         # prepare list of variables
         # defines target type and reference level
-        
+        y = data[target].values
         # prepare  data: X and y
+        if select_vars == None:
+            select_vars = data.columns.values
+            select_vars[~(select_vars == target)]
+        if (exclude_vars != None):
+            select_vars = select_vars[(~np.isin(select_vars,exclude_vars))]        
+        self.variable_names = select_vars
+        X= data.filter(items =select_vars, axis = 1)
 
-   
-        
-        all_optb = BinningProcess(variable_names = ,**optbinning_kwargs)  # ...definition of what we want to do as computation
+        #X = df.drop(columns=target).values
+        all_optb = BinningProcess(variable_names=  select_vars,**optbinning_kwargs)  # ...definition of what we want to do as computation
         all_optb = all_optb.fit(X, y) # effectively perform computations
-       
-       
-       # post operations
 
-       # build all binning tables
-       for ivar. in all_optb._binned_variables:
-        all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
+
+
+        # post operations
+
+        # build all binning tables
+        for ivar in all_optb._binned_variables:
+            all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
         self.profiles = all_optb    
 
@@ -111,12 +116,14 @@ class Targeter(data, target, target_type, variable_names, categorical_variables)
         #<TODO> additional steps to be one
         return(out)
 
-    def transform(self, x, y):
-        self.profiles.fit_transform(self.data, self.data.[target].values)
-    
+#    def transform(self, x, y):
+#        self.profiles.fit_transform(data, data.[target].values)
+    def plot(self, name):
+        self.profiles.get_binned_variable(name).binning_table.plot()
+        
     def get_binned_variable(self,name:str):
-        self.profiles.get_binned_variable(name)
-    
+        return(self.profiles.get_binned_variable(name))
+#
     
     
 
