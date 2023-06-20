@@ -37,16 +37,21 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 
 class Targeter():
     def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, **optbinning_kwargs):
+
         self.target = target
+
+        # retrieve dataframe name from call and store it in ouput 'data' slot
         frame = inspect.currentframe()
         dfname=''
         try:
-	        for var, val in frame.f_back.f_locals.items():
-	            if val is data:
-		            dfname = var
+            for var, val in frame.f_back.f_locals.items():
+                if val is data:
+                    dfname = var
         finally:
-	        del frame
+            del frame
         self.data = dfname
+
+        # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
             if (target_type in ['categorical_num','categorical_str']):
@@ -69,30 +74,34 @@ class Targeter():
         
         if (target_type == 'binary'):
             if target_reference_level is None:
-
-                #target_reference_level = data[target].values[0] # <TODO>: smarter guess
-                
+                # try to guess what wiuld be a good reference value
                 if type(data[target].values[0]) == str:
                     #recodage
-                    target_reference_level = data[target].value_count().index[0]
-                else: # type(data[target].values[0]) == float or type(data[target].values[0]) == int or type(data[target].values[0]) == bool
+                    target_reference_level = data[target].value_counts(sort = True, ascending = True).index[0] #Added ascending to take modality  with lowest counts
+                else: 
+                    # type int/num/bolean, expecting 1/True , any other type (dates?)-> max value
                     target_reference_level = max(data[target].dropna().values)
             self.target_reference_level = target_reference_level
+            # recode # !<WARN> problem : will remove missing values
             data[target] = (data[target] == target_reference_level).astype(int)
             print("the reference level has been defined as:{}".format(target_reference_level))
 
 #            if type(format_target) == str:,
         # prepare list of variables
-        # defines target type and reference level
-        y = data[target].values
         # prepare  data: X and y
         if select_vars == None:
             select_vars = data.columns.values
-            select_vars[~(select_vars == target)]
-        if (exclude_vars != None):
-            select_vars = select_vars[(~np.isin(select_vars,exclude_vars))]        
+        #     select_vars[~(select_vars == target)]
+        # if (exclude_vars != None):
+        #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))]        
+        
+        select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
+        
         self.variable_names = select_vars
+
+        # prepare data for optbinni
         X= data.filter(items =select_vars, axis = 1)
+        y = data[target].values
 
         #X = df.drop(columns=target).values
         all_optb = BinningProcess(variable_names=  select_vars,**optbinning_kwargs)  # ...definition of what we want to do as computation
