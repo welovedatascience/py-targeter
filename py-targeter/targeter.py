@@ -119,13 +119,14 @@ class Targeter():
         self.profiles.get_binned_variable(name).binning_table
     def summary(self):
         out = self.profiles.summary()
-        #<TODO> additional steps to be one
+        #<TODO> additional steps to be added to add some more information
         return(out)
 
 #    def transform(self, x, y):
 #        self.profiles.fit_transform(data, data.[target].values)
     def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'actual', show_bin_labels = False):
-        self.profiles.get_binned_variable(name).binning_table.plot(metric = metric,add_special=add_special, add_missing=add_missing, style=style, show_bin_labels=show_bin_labels )
+        #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
+        self.profiles.get_binned_variable(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
         
     def get_binned_variable(self,name:str):
         return(self.profiles.get_binned_variable(name))
