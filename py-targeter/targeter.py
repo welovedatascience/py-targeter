@@ -129,8 +129,24 @@ class Targeter():
         return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
 
     def summary(self):
+
         out = self.profiles.summary()
-        #<TODO> additional steps to be added to add some more information
+        
+        tmp_df = pd.DataFrame() 
+        for ivar in out['name'].values:
+            # print(ivar)
+            tab = self.get_table(ivar)
+            max_index = tab['Event rate'].values.argmax()
+            max_label = tab.iloc[max_index, tab.columns.get_loc('Bin')]
+            max_event_rate = tab.iloc[max_index, tab.columns.get_loc('Event rate')]
+            max_count = tab.iloc[max_index, tab.columns.get_loc('Count')]
+            max_df = pd.DataFrame({'Max ER - Bin': [max_label],
+                                   'Max Event Rate':[max_event_rate],
+                                   'Max ER - Count':[max_count]})
+            tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
+
+        out = pd.concat([out, tmp_df], axis = 1, join = 'inner')
+        out['Max ER - Bin'] = out['Max ER - Bin'].map(lambda cell: np.array2string(cell) if isinstance(cell,np.ndarray)  else cell)
         return(out)
 
 #    def transform(self, x, y):

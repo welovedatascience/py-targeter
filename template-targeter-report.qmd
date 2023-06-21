@@ -2,20 +2,26 @@
 title: "Targeter analysis"
 toc: true
 toc-depth: 2
+toc-location: body
 toc-title: Contents
 format:
   html:
+    page-layout: full
     embed-resources: true
-    code-fold: false
-jupyter: python3
+    standalone: true
+    smooth-scroll: true
 execute:
-  echo: false
+  echo: false # hides code by default
+  warning: false
 ---
 
 ```{python}
 import papermill
 import targeter
 from IPython.display import display, HTML
+from itables import init_notebook_mode, show
+
+init_notebook_mode(all_interactive=False)
 ```
 
 ```{python}
@@ -77,7 +83,18 @@ tar.target_stats
 
 
 ```{python}
-tar.summary()
+tab_sum = tar.summary()
+tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N'}, inplace = True)
+tab_sum.sort_values(by=['qs'], ascending = False)
+vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N']
+tab_sum = tab_sum[vars]
+tab_sum = tab_sum.astype({'iv': float, 'qs': float}) # https://dev.to/theolakusibe/solving-attributeerror-float-object-has-no-attribute-rint-4la#:~:text=Solution%20To%20convert%20the%20column%20with%20a%20mixed,by%20using%20the%20pandas.DataFrame.astype%20function%2C%20as%20illustrated%20below
+tab_sum['iv'] = tab_sum['iv'].round(3)
+tab_sum['qs'] = tab_sum['qs'].round(3)
+tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
+show(tab_sum, autoWidth = False, paging = False, info = False, style = "width:100%;margin:auto",scrollX=True,  columnDefs=[{"width": "20%", "targets": [5,6]}],)
+
+
 ```
 
 ## Variables
@@ -86,7 +103,7 @@ tar.summary()
 
 def format_df(df):
     """format the dataframe for display without index"""
-    return display(HTML(df.to_html(index=False)))
+    return display(HTML(df.to_html(index=True)))
 
 # loop over variables
 for ivar in list(tar.profiles.variable_names):
