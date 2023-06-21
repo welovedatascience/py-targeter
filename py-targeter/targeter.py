@@ -3,6 +3,11 @@ import pandas as pd
 from optbinning import BinningProcess
 import inspect
 import numpy as np
+from tempfile import mkdtemp
+import os
+import shutil
+from pickle import dump
+import subprocess
 
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
@@ -95,6 +100,7 @@ class Targeter():
         select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
         
         self.variable_names = select_vars
+        self.target_stats = data[target].describe()
 
         # prepare data for optbinni
         X= data.filter(items =select_vars, axis = 1)
@@ -115,8 +121,13 @@ class Targeter():
         self.profiles = all_optb    
 
 
-    def get_binning_table(self, name):
-        self.profiles.get_binned_variable(name).binning_table
+    # def get_binning_table(self, name):
+    #    self.profiles.get_binned_variable(name).binning_table
+
+
+    def get_table(self, name, show_digits = 2, add_totals = False):
+        return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
+
     def summary(self):
         out = self.profiles.summary()
         #<TODO> additional steps to be added to add some more information
@@ -124,26 +135,55 @@ class Targeter():
 
 #    def transform(self, x, y):
 #        self.profiles.fit_transform(data, data.[target].values)
-    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'actual', show_bin_labels = False):
+    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = False):
         #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
-        self.profiles.get_binned_variable(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+        self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
         
-    def get_binned_variable(self,name:str):
+    def get_optbinning_object(self,name:str):
         return(self.profiles.get_binned_variable(name))
 #
-    
-    
-
-
-
-
-
-
-    
-
-    
-            
-
-
-
+    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter'):
         
+        # create temporary folder
+        tmpdir = mkdtemp(prefix = 'targeter_')
+
+
+        # copy template in it
+        if (template is None):
+            # default template:
+            template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
+        to_template = os.path.join(tmpdir, 'targeter-report.qmd')
+        shutil.copy(template, to_template)    
+        
+        tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
+        file = open(tar_pickle_path,'wb')
+        dump(self, file)
+        file.close()        
+        
+        ## <!> temporary: need package and installed package to work...
+        
+        tofile = os.path.join(tmpdir, 'targeter.py')
+        shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
+        
+
+        #ff
+        cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tar_pickle_path:"'+ tar_pickle_path + '"' + ' --to ' + out_format
+        p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
+        p.wait()    
+        
+
+        if out_file is None:
+            out_file = 'report'
+        out_file = os.path.join(out_directory, out_file+'.'+out_format)
+        
+        report_file = os.path.join(tmpdir, 'generated_report')
+        shutil.copy(report_file, out_file)    
+        
+
+
+        return(out_file)
+
+    def quadrant_plot(self,name):
+        # todo
+        return(self.get_optbinning_object(name).binning_table.plot())
+
