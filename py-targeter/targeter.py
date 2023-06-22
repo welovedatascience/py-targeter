@@ -8,6 +8,8 @@ import os
 import shutil
 from pickle import dump
 import subprocess
+from matplotlib import pyplot
+from adjustText import adjust_text
 
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
@@ -53,7 +55,7 @@ class Targeter():
             del frame
         self.data = dfname
         self.target = target
-        # handle target type
+         # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
             if (target_type in ['categorical_num','categorical_str']):
@@ -100,7 +102,6 @@ class Targeter():
         select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
         
         self.variable_names = select_vars
-        self.target_stats = data[target].describe()
 
         # prepare data for optbinni
         X= data.filter(items =select_vars, axis = 1)
@@ -199,7 +200,23 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name):
-        # todo
-        return(self.get_optbinning_object(name).binning_table.plot())
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab="Event rate", color = 'red'):
+        x = self.get_table(name)["Count"].values
+        y = self.get_table(name)["Event rate"].values
+        pyplot.scatter(x, y)
+        pyplot.xlabel(xlab)
+        pyplot.ylabel(ylab)
+        labels = self.get_table(name)[["Bin"]].values
+
+        texts = []
+        for i in range(len(x)):
+            text_label = ' '.join(str(label) for label in labels[i])
+            texts.append(pyplot.text(x[i], y[i], text_label))
+
+        adjust_text(texts)
+        z = [self.target_stats.values[1] for i in range(len(x))]
+        if title is None:
+            title = name
+        pyplot.plot(x, z, color=color, title = title)
+        pyplot.show()
 
