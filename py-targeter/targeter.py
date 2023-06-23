@@ -184,7 +184,7 @@ class Targeter():
             raise TypeError("path must be a string.")
 
         with open(path, "wb") as f:
-            pickle.dump(self, f)
+            dump(self, f)
 
     def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter'):
         
@@ -201,9 +201,9 @@ class Targeter():
         
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
         
-        self.save(self, tar_pickle_path)
+        self.save(tar_pickle_path)
         
-        
+
         ## <!> temporary: need package and installed package to work...
         
         tofile = os.path.join(tmpdir, 'targeter.py')
