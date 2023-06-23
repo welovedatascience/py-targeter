@@ -18,25 +18,28 @@ execute:
   warning: false
 ---
 
+
 ```{python}
 import papermill
 import targeter
 from IPython.display import display, HTML
 from itables import init_notebook_mode, show
-
+import os
 init_notebook_mode(all_interactive=False)
 ```
 
 ```{python}
 #| tags: [parameters]
-
-
-tar_pickle_path = './targeter.pickle'
-
+tmpdir = '.'
 ```
 
 
+
 ```{python}
+
+tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
+
+
 import pickle
 file = open(tar_pickle_path, 'rb')
 tar = pickle.load(file)
@@ -134,15 +137,15 @@ for ivar in list(tar.profiles.variable_names):
 
 # cat(paste0("<div id='var-",tolower(ivar),"'>\n\n## ",label(ivar, metadata=metadata), ifelse(ivar_label!=ivar, paste0(" (",ivar,")"),""),"\n</div>"))
   ivar_label = label(ivar, metadata) 
-    
+
 
   itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
-  
+
   if (ivar_label != ivar):
     itxt = itxt + "(" + ivar + ")"
   itxt = itxt + "\n</div>"
 
-  
+
   from IPython.display import display, Markdown
   display(Markdown(f"""{itxt}"""))
 
@@ -156,10 +159,12 @@ for ivar in list(tar.profiles.variable_names):
   tar.quadrant_plot(ivar)
 
 
+  # tar.quadrant_plot(ivar)
+
   vars =['Bin','Count', 'Count (%)', 'Event rate','WoE']
   format_df(tar.get_table(ivar)[vars])
   # plot
   display(Markdown("\n\n:::\n\n"))
 
-  
+
 ```
