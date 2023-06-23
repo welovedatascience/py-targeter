@@ -17,7 +17,7 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
         if (remove_missing):
             column = column[column.notnull()]
         column = column.values
-        type_col = type(column[0])
+        type_col = type(column[0].item())
         if type_col == bool:
             return "binary_bool"
         vals = list(set(column))
@@ -55,6 +55,11 @@ class Targeter():
             del frame
         self.data = dfname
         self.target = target
+        counts = data[target].value_counts()
+        proportions = counts / len(data)
+        self.target_stats = pd.DataFrame({'Count': counts, 'Proportion': proportions})
+        self.target_stats["target_reference_level"] = ""
+        index = data[target].value_counts().index
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
@@ -89,6 +94,13 @@ class Targeter():
             # recode # !<WARN> problem : will remove missing values
             data[target] = (data[target] == target_reference_level).astype(int)
             print("the reference level has been defined as:{}".format(target_reference_level))
+            self.target_type = target_type
+            for a in range(len(index)):
+                    if index[a]==self.target_reference_level:
+                        self.target_stats.loc[a,"target_reference_level"] = "x"
+            if self.target_type == "binary":
+                self.mean = data[target].describe().values[1]
+            
 
 #            if type(format_target) == str:,
         # prepare list of variables
@@ -214,9 +226,10 @@ class Targeter():
             texts.append(pyplot.text(x[i], y[i], text_label))
 
         adjust_text(texts)
-        z = [self.target_stats.values[1] for i in range(len(x))]
+        z = [self.mean for i in range(len(x))]
         if title is None:
             title = name
-        pyplot.plot(x, z, color=color, title = title)
+        pyplot.plot(x, z, color=color)
+        pyplot.title(title)
         pyplot.show()
 
