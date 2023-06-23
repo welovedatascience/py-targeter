@@ -102,9 +102,9 @@ tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
 
 # wrap text https://stackoverflow.com/questions/63286431/datatables-js-not-wrapping-cell-text#:~:text=You%20can%20try%20creating%20a%20class%20and%20then,data%20%2B%20%22%3C%2Fdiv%3E%22%3B%20%7D%2C%20targets%3A%202%20%7D%20%5D
 #<IDEA> extend itables python package to add advanced search functionality
-tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal; width:200px">'+cell+"<div>")
+tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
 
-show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto",scrollX=True)
+show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
 
 
 ```
@@ -152,6 +152,8 @@ for ivar in list(tar.profiles.variable_names):
 
 
   tar.plot(ivar)
+
+  tar.quadrant_plot(ivar)
 
 
   vars =['Bin','Count', 'Count (%)', 'Event rate','WoE']
