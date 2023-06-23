@@ -17,7 +17,7 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
         if (remove_missing):
             column = column[column.notnull()]
         column = column.values
-        type_col = type(column[0].item())
+        type_col = type(column[0])
         if type_col == bool:
             return "binary_bool"
         vals = list(set(column))
@@ -28,7 +28,7 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
                 return "binary_str"
             else:
                 return "categorical_str"
-        if (type_col == float) | (type_col == int):
+        if (type(column[0].item()) == float) | (type(column[0].item()) == int):
             if len(vals) == 1:
                 return "unimode"
             elif len(vals) == 2:
@@ -94,12 +94,13 @@ class Targeter():
             # recode # !<WARN> problem : will remove missing values
             data[target] = (data[target] == target_reference_level).astype(int)
             print("the reference level has been defined as:{}".format(target_reference_level))
-            self.target_type = target_type
+        self.target_type = target_type
+        if self.target_type == "binary":
             for a in range(len(index)):
                     if index[a]==self.target_reference_level:
                         self.target_stats.loc[a,"target_reference_level"] = "x"
-            if self.target_type == "binary":
-                self.mean = data[target].describe().values[1]
+            self.mean = data[target].describe().values[1]
+        
             
 
 #            if type(format_target) == str:,
@@ -117,7 +118,14 @@ class Targeter():
 
         # prepare data for optbinni
         X= data.filter(items =select_vars, axis = 1)
-        y = data[target].values
+        
+        
+        if (target_type == 'continuous'):
+            y = data[target].map(lambda x: float(x)).values # ensure int are identified as conitnious by sklearn target nature detection
+            y[0] = y[0]+0.000000000001
+        else:
+            y = data[target].values
+
 
         #X = df.drop(columns=target).values
         all_optb = BinningProcess(variable_names=  select_vars,**optbinning_kwargs)  # ...definition of what we want to do as computation
@@ -146,17 +154,30 @@ class Targeter():
         out = self.profiles.summary()
         
         tmp_df = pd.DataFrame() 
-        for ivar in out['name'].values:
-            # print(ivar)
-            tab = self.get_table(ivar)
-            max_index = tab['Event rate'].values.argmax()
-            max_label = tab.iloc[max_index, tab.columns.get_loc('Bin')]
-            max_event_rate = tab.iloc[max_index, tab.columns.get_loc('Event rate')]
-            max_count = tab.iloc[max_index, tab.columns.get_loc('Count')]
-            max_df = pd.DataFrame({'Max ER - Bin': [max_label],
+        if self.target_type == "binary":
+            for ivar in out['name'].values:
+                # print(ivar)
+                tab = self.get_table(ivar)
+                max_index = tab['Event rate'].values.argmax()
+                max_label = tab.iloc[max_index, tab.columns.get_loc('Bin')]
+                max_event_rate = tab.iloc[max_index, tab.columns.get_loc('Event rate')]
+                max_count = tab.iloc[max_index, tab.columns.get_loc('Count')]
+                max_df = pd.DataFrame({'Max ER - Bin': [max_label],
                                    'Max Event Rate':[max_event_rate],
                                    'Max ER - Count':[max_count]})
-            tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
+                tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
+        if self.target_type == "continuous":
+            for ivar in out['name'].values:
+                tab = self.get_table(ivar)
+                max_index = tab['Mean'].values.argmax()
+                max_label = tab.iloc[max_index, tab.columns.get_loc('Bin')]
+                max_mean = tab.iloc[max_index, tab.columns.get_loc('Mean')]
+                max_count = tab.iloc[max_index, tab.columns.get_loc('Count')]
+                max_df = pd.DataFrame({'Max ER - Bin': [max_label],
+                                   'Max Mean':[max_mean],
+                                   'Max ER - Count':[max_count]})
+                tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
+
 
         out = pd.concat([out, tmp_df], axis = 1, join = 'inner')
         out['Max ER - Bin'] = out['Max ER - Bin'].map(lambda cell: np.array2string(cell) if isinstance(cell,np.ndarray)  else cell)
@@ -166,7 +187,11 @@ class Targeter():
 #        self.profiles.fit_transform(data, data.[target].values)
     def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = False):
         #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
-        self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+        if self.target_type == "binary":
+            self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+        if self.target_type == "continuous":
+            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+
         
     def get_optbinning_object(self,name:str):
         return(self.profiles.get_binned_variable(name))
@@ -227,24 +252,65 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name,title=None,xlab="Count",ylab="Event rate", color = 'red'):
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red'):
         x = self.get_table(name)["Count"].values
-        y = self.get_table(name)["Event rate"].values
-        pyplot.scatter(x, y)
-        pyplot.xlabel(xlab)
-        pyplot.ylabel(ylab)
         labels = self.get_table(name)[["Bin"]].values
+        if self.target_type == "binary":
+            y = self.get_table(name)["Event rate"].values
+            pyplot.scatter(x, y)
+            pyplot.xlabel(xlab)
+           
+        
 
-        texts = []
-        for i in range(len(x)):
-            text_label = ' '.join(str(label) for label in labels[i])
-            texts.append(pyplot.text(x[i], y[i], text_label))
+            texts = []
+            for i in range(len(x)):
+                text_label = ' '.join(str(label) for label in labels[i])
+                texts.append(pyplot.text(x[i], y[i], text_label))
 
-        adjust_text(texts)
-        z = [self.mean for i in range(len(x))]
-        if title is None:
-            title = name
-        pyplot.plot(x, z, color=color)
-        pyplot.title(title)
-        pyplot.show()
+            adjust_text(texts)
+            z = [self.mean for i in range(len(x))]
+            if title is None:
+                title = name
+            if ylab == None:
+                ylab ="Event rate"
+            pyplot.ylabel(ylab)
+            pyplot.plot(x, z, color=color)
+            pyplot.title(title)
+            pyplot.show()
+        if self.target_type == "continuous":
+            y = self.get_table(name)["Mean"].values
+            pyplot.scatter(x, y)
+            pyplot.xlabel(xlab)
+            
+        
+
+            texts = []
+            for i in range(len(x)):
+                text_label = ' '.join(str(label) for label in labels[i])
+                texts.append(pyplot.text(x[i], y[i], text_label))
+
+            adjust_text(texts)
+            if title is None:
+                title = name
+            if ylab == None:
+                ylab = "Mean"
+            pyplot.ylabel(ylab)
+            pyplot.title(title)
+            pyplot.show()
+    def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
+        self._metadata = meta[[var_col,label_col]]
+        self._metadata = self._metadata.rename(columns={var_col : "var", label_col : "label"})
+    def label(self,names):
+        names_list = list(names)
+        a = pd.DataFrame(names_list, columns=["var"])
+        final = pd.merge(self._metadata, a)
+        labels_descriptions = [str(final["var"].values[i]) + ":" + str(final["label"].values[i]) for i in range(len(final["var"].values))]
+        return(labels_descriptions)
+        
+
+
+        
+        
+
+
 
