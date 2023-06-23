@@ -171,6 +171,21 @@ class Targeter():
     def get_optbinning_object(self,name:str):
         return(self.profiles.get_binned_variable(name))
 #
+
+    def save(self, path):
+        """Save binning process to pickle file.
+
+        Parameters
+        ----------
+        path : str
+            Pickle file path.
+        """
+        if not isinstance(path, str):
+            raise TypeError("path must be a string.")
+
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
+
     def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter'):
         
         # create temporary folder
@@ -185,9 +200,9 @@ class Targeter():
         shutil.copy(template, to_template)    
         
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
-        file = open(tar_pickle_path,'wb')
-        dump(self, file)
-        file.close()        
+        
+        self.save(self, tar_pickle_path)
+        
         
         ## <!> temporary: need package and installed package to work...
         
@@ -196,7 +211,7 @@ class Targeter():
         
 
         #ff
-        cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tar_pickle_path:"'+ tar_pickle_path + '"' + ' --to ' + out_format
+        cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tmpdir:"'+ tmpdir + '"' + ' --to ' + out_format
         p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
         p.wait()    
         
