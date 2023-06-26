@@ -252,8 +252,14 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red'):
-        x = self.get_table(name)["Count"].values
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True:bool):
+        if add_missing == False:
+            data_no_missing = self.get_table(name)["Count"] 
+            data_no_missing = data_no_missing[data_no_missing.notnull()]
+            x = data_no_missing.values
+        else:
+            data_with_missing = self.get_table(name)["Count"] 
+            x = data_with_missing.values
         labels = self.get_table(name)[["Bin"]].values
         if self.target_type == "binary":
             y = self.get_table(name)["Event rate"].values
@@ -300,12 +306,15 @@ class Targeter():
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
         self._metadata = meta[[var_col,label_col]]
         self._metadata = self._metadata.rename(columns={var_col : "var", label_col : "label"})
-    def label(self,names):
+    def get_metadata(self):
+        return self._metadata
+    def label(self,names:list):
         names_list = list(names)
         a = pd.DataFrame(names_list, columns=["var"])
         final = pd.merge(self._metadata, a)
-        labels_descriptions = [str(final["var"].values[i]) + ":" + str(final["label"].values[i]) for i in range(len(final["var"].values))]
+        labels_descriptions = [str(final["var"].values[i]) + ": " + str(final["label"].values[i]) for i in range(len(final["var"].values))]
         return(labels_descriptions)
+    
         
 
 
