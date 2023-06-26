@@ -12,7 +12,6 @@ format:
     page-layout: full
     embed-resources: true
     standalone: true
-    smooth-scroll: true
 execute:
   echo: false # hides code by default
   warning: false
