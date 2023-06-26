@@ -289,6 +289,7 @@ class Targeter():
             pyplot.ylabel(ylab)
             pyplot.plot(x, z, color=color)
             pyplot.title(title)
+        if show == True:
             pyplot.show()
         if self.target_type == "continuous":
             y = self.get_table(name)["Mean"].values
