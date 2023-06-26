@@ -258,7 +258,7 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True):
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, show=True):
         #Choose whether to show missing values or not 
         if add_missing == False:
             data_no_missing = self.get_table(name)["Count"] 
@@ -311,7 +311,8 @@ class Targeter():
                 ylab = "Mean"
             pyplot.ylabel(ylab)
             pyplot.title(title)
-            pyplot.show()
+            if show == True:
+                pyplot.show()
 
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
         self._metadata = meta[[var_col,label_col]]
