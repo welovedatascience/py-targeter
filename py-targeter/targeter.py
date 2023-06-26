@@ -303,13 +303,16 @@ class Targeter():
                 texts.append(pyplot.text(x[i], y[i], text_label))
 
             adjust_text(texts)
-            if title is None:
-                title = name
+            if title is None and self._metadata is not None:
+                title = labels(name)
+            else:
+                title = name 
             if ylab == None:
                 ylab = "Mean"
             pyplot.ylabel(ylab)
             pyplot.title(title)
             pyplot.show()
+
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
         self._metadata = meta[[var_col,label_col]]
         self._metadata = self._metadata.rename(columns={var_col : "name", label_col : "label"})
@@ -317,13 +320,19 @@ class Targeter():
             print ("Each var from the dataset is included in meta")
         else: 
             print("Some var from meta are not in the dataset")
+
     def get_metadata(self):
         return self._metadata
+
     def label(self,names):
         if type(names) == str:
             names_list = [names]
+            if names not in self.variable_names:
+                raise Exception("{} does not exist in data".format(names))
         else:
             names_list = list(names)
+            if not(set(names_list) <= set(self.variable_names)):
+                raise Exception("Names does not exist in data")
         a = pd.DataFrame(names_list, columns=["name"])
         final = pd.merge(self._metadata, a)
         labels_descriptions = []
