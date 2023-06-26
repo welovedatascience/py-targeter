@@ -115,6 +115,8 @@ show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
 
 ```{python}
 #| results: asis
+import matplotlib.pyplot as pyplot
+from adjustText import adjust_text
 
 def label(var, metadata = None):
   if metadata is None:
@@ -156,6 +158,12 @@ for ivar in list(tar.profiles.variable_names):
   tar.plot(ivar)
 
   tar.quadrant_plot(ivar)
+
+  pyplot.subplots_adjust(wspace=0.5)
+
+  pyplot.show()
+
+
 
 
   # tar.quadrant_plot(ivar)
