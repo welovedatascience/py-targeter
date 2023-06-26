@@ -59,7 +59,8 @@ class Targeter():
         proportions = counts / len(data)
         self.target_stats = pd.DataFrame({'Count': counts, 'Proportion': proportions})
         self.target_stats["target_reference_level"] = ""
-        index = data[target].value_counts().index
+        self.index = list(data[target].unique())
+        index = list(data[target].unique())
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
@@ -96,9 +97,9 @@ class Targeter():
             print("the reference level has been defined as:{}".format(target_reference_level))
         self.target_type = target_type
         if self.target_type == "binary":
-            for a in range(len(index)):
-                    if index[a]==self.target_reference_level:
-                        self.target_stats.loc[a,"target_reference_level"] = "x"
+            for a in range(len(self.index)):
+                    if self.index[a]==target_reference_level:
+                        self.target_stats.loc[self.index[a],"target_reference_level"] = "x"
             self.mean = data[target].describe().values[1]
         
             
@@ -252,7 +253,8 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True:bool):
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True):
+        #Choose whether to show missing values or not 
         if add_missing == False:
             data_no_missing = self.get_table(name)["Count"] 
             data_no_missing = data_no_missing[data_no_missing.notnull()]
