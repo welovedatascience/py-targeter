@@ -57,10 +57,9 @@ class Targeter():
         self.target = target
         counts = data[target].value_counts()
         proportions = counts / len(data)
-        self.target_stats = pd.DataFrame({'Count': counts, 'Proportion': proportions})
-        self.target_stats["target_reference_level"] = ""
         self.index = list(data[target].unique())
         index = list(data[target].unique())
+        self._metadata = None
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
@@ -97,10 +96,11 @@ class Targeter():
             print("the reference level has been defined as:{}".format(target_reference_level))
         self.target_type = target_type
         if self.target_type == "binary":
+            self.target_stats = pd.DataFrame({'Count': counts, 'Proportion': proportions, 'target_reference_level':''})
             for a in range(len(self.index)):
                     if self.index[a]==target_reference_level:
                         self.target_stats.loc[self.index[a],"target_reference_level"] = "x"
-            self.mean = data[target].describe().values[1]
+            self.mean = data[target].mean()
         
             
 
@@ -180,8 +180,13 @@ class Targeter():
                 tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
 
 
+        
+
         out = pd.concat([out, tmp_df], axis = 1, join = 'inner')
         out['Max ER - Bin'] = out['Max ER - Bin'].map(lambda cell: np.array2string(cell) if isinstance(cell,np.ndarray)  else cell)
+        if self._metadata is not None:
+                out = pd.merge(out, self._metadata)
+                out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count']]
         return(out)
 
 #    def transform(self, x, y):
@@ -307,14 +312,26 @@ class Targeter():
             pyplot.show()
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
         self._metadata = meta[[var_col,label_col]]
-        self._metadata = self._metadata.rename(columns={var_col : "var", label_col : "label"})
+        self._metadata = self._metadata.rename(columns={var_col : "name", label_col : "label"})
+        if set(self.variable_names) <= set(self._metadata["name"].values):
+            print ("Each var from the dataset is included in meta")
+        else: 
+            print("Some var from meta are not in the dataset")
     def get_metadata(self):
         return self._metadata
-    def label(self,names:list):
-        names_list = list(names)
-        a = pd.DataFrame(names_list, columns=["var"])
+    def label(self,names):
+        if type(names) == str:
+            names_list = [names]
+        else:
+            names_list = list(names)
+        a = pd.DataFrame(names_list, columns=["name"])
         final = pd.merge(self._metadata, a)
-        labels_descriptions = [str(final["var"].values[i]) + ": " + str(final["label"].values[i]) for i in range(len(final["var"].values))]
+        labels_descriptions = []
+        for i in range(len(final["name"].values)):
+            if str(final["label"].values[i]) == 'nan':
+                labels_descriptions.append(str(final["name"].values[i]))
+            else:
+                labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
     
         
