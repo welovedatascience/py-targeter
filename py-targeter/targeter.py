@@ -258,18 +258,21 @@ class Targeter():
 
         return(out_file)
 
-    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, show=True):
+    def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, add_specials=False, show=False):
         #Choose whether to show missing values or not 
+        tab = self.get_table(name)
         if add_missing == False:
-            data_no_missing = self.get_table(name)["Count"] 
-            data_no_missing = data_no_missing[data_no_missing.notnull()]
-            x = data_no_missing.values
-        else:
-            data_with_missing = self.get_table(name)["Count"] 
-            x = data_with_missing.values
+            x = tab.drop("Missing")
+        if add_specials == False:
+            x = tab.drop("Special")
+        x = x["Count"].values
         labels = self.get_table(name)[["Bin"]].values
         if self.target_type == "binary":
-            y = self.get_table(name)["Event rate"].values
+            if add_missing == False:
+                y = tab.drop("Missing")
+            if add_specials == False:
+                y = tab.drop("Special")
+            y = y["Event rate"].values
             pyplot.scatter(x, y)
             pyplot.xlabel(xlab)
            
@@ -289,10 +292,13 @@ class Targeter():
             pyplot.ylabel(ylab)
             pyplot.plot(x, z, color=color)
             pyplot.title(title)
-        if show == True:
-            pyplot.show()
+        
         if self.target_type == "continuous":
-            y = self.get_table(name)["Mean"].values
+            if add_missing == False:
+                y = tab.drop("Missing")
+            if add_specials == False:
+                y = tab.drop("Special")
+            y = y["Mean"].values
             pyplot.scatter(x, y)
             pyplot.xlabel(xlab)
             
@@ -312,15 +318,14 @@ class Targeter():
                 ylab = "Mean"
             pyplot.ylabel(ylab)
             pyplot.title(title)
-            if show == True:
+        if show == True:
                 pyplot.show()
+
 
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
         self._metadata = meta[[var_col,label_col]]
         self._metadata = self._metadata.rename(columns={var_col : "name", label_col : "label"})
-        if set(self.variable_names) <= set(self._metadata["name"].values):
-            print ("Each var from the dataset is included in meta")
-        else: 
+        if not(set(self.variable_names) <= set(self._metadata["name"].values)): 
             print("Some var from meta are not in the dataset")
 
     def get_metadata(self):
@@ -330,7 +335,8 @@ class Targeter():
         if type(names) == str:
             names_list = [names]
             if names not in self.variable_names:
-                raise Exception("{} does not exist in data".format(names))
+                return(names)
+                print("{} does not exist in data".format(names))
         else:
             names_list = list(names)
             if not(set(names_list) <= set(self.variable_names)):
