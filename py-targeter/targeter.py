@@ -260,18 +260,22 @@ class Targeter():
 
     def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, add_specials=False, show=False):
         #Choose whether to show missing values or not 
-        tab = self.get_table(name)
+        x = self.get_table(name)
         if add_missing == False:
-            x = tab.drop("Missing")
+            x = x.drop(x[x["Bin"] == "Missing"].index)
         if add_specials == False:
-            x = tab.drop("Special")
+            x = x.drop(x[x["Bin"] == "Special"].index)
         x = x["Count"].values
         labels = self.get_table(name)[["Bin"]].values
         if self.target_type == "binary":
-            if add_missing == False:
-                y = tab.drop("Missing")
+            y = self.get_table(name)
             if add_specials == False:
-                y = tab.drop("Special")
+                y = y.drop(y[y["Bin"] == "Special"].index)
+            if add_missing == False:
+                y = y.drop(y[y["Bin"] == "Missing"].index)
+            if add_specials == False and add_missing == False:
+                y = y.drop(y[y["Bin"] == "Special"].index)
+                y = y.drop(y[y["Bin"] == "Missing"].index)
             y = y["Event rate"].values
             pyplot.scatter(x, y)
             pyplot.xlabel(xlab)
@@ -294,10 +298,14 @@ class Targeter():
             pyplot.title(title)
         
         if self.target_type == "continuous":
+            y = self.get_table(name)
             if add_missing == False:
-                y = tab.drop("Missing")
+                y = y.drop(y[y["Bin"] == "Missing"].index)
             if add_specials == False:
-                y = tab.drop("Special")
+                y = y.drop(y[y["Bin"] == "Special"].index)
+            if add_specials == False and add_missing == False:
+                y = y.drop(y[y["Bin"] == "Special"].index)
+                y = y.drop(y[y["Bin"] == "Missing"].index)
             y = y["Mean"].values
             pyplot.scatter(x, y)
             pyplot.xlabel(xlab)
