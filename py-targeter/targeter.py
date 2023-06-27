@@ -140,7 +140,8 @@ class Targeter():
         #for ivar in all_optb._binned_variables:
         #    all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
-        self.profiles = all_optb    
+        self.profiles = all_optb
+        self.selection = self.variable_names    
 
 
     # def get_binning_table(self, name):
@@ -358,6 +359,28 @@ class Targeter():
             else:
                 labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
+    
+    def filter(self,criteria:str,n:int=None,min_criteria:int=None, n_min:int = None,force_var:list = None,max_criteria:int = None):
+        final = self.summary()
+        if min_criteria is not None:
+            final = final.drop(final[final[criteria] < min_criteria])
+        if min_criteria is not None:
+            final = final.drop(final[final[criteria] > min_criteria])
+        if n_min is not None:
+            final = final.drop(final[final["Max ER - Count"] < n_min])    
+        final = final.sort_values(by = criteria, ascending = False)
+        if n is not None:
+            final = final.iloc[1:n,:]
+        variables_selected = final["name"].values
+        if force_var is not None:
+            for i in range(len(force_var)):
+                variables_selected.append(force_var[i])
+        variables_selected = list(set(variables_selected))
+        self.selection = variables_selected
+
+
+
+
     
         
 
