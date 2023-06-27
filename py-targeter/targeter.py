@@ -360,14 +360,14 @@ class Targeter():
                 labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
     
-    def filter(self,criteria:str,n:int=None,min_criteria:float=None, n_min:int = None,force_var:list = None,max_criteria:float = None):
+    def filter(self,criteria:str,n:int=None,min_criteria:float=None, count_min:int = None,force_var:list = None,max_criteria:float = None):
         final = self.summary()
         if min_criteria is not None:
             final = final.drop(final[final[criteria] < min_criteria].index)
         if min_criteria is not None:
             final = final.drop(final[final[criteria] > max_criteria].index)
-        if n_min is not None:
-            final = final.drop(final[final["Max ER - Count"] < n_min].index)    
+        if count_min is not None:
+            final = final.drop(final[final["Max ER - Count"] < count_min].index)    
         final = final.sort_values(by = criteria, ascending = False)
         if n is not None:
             final = final.iloc[1:n,:]
