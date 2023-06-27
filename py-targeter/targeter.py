@@ -141,7 +141,8 @@ class Targeter():
         #    all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
         self.profiles = all_optb
-        self.selection = self.variable_names    
+        self.selection = self.variable_names
+        self.filtered = True    
 
 
     # def get_binning_table(self, name):
@@ -360,23 +361,28 @@ class Targeter():
                 labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
     
-    def filter(self,criteria:str,n:int=None,min_criteria:float=None, count_min:int = None,force_var:list = None,max_criteria:float = None):
+    def filter(self,metric:str="iv",n:int=None,min_criteria:float=None, count_min:int = None,force_var:list = None,max_criteria:float = None, ascending_method:bool = False):
         final = self.summary()
+        if metric not in ['iv', 'js', 'gini', 'quality_score']:
+            raise Exception("This is not a metric")
         if min_criteria is not None:
-            final = final.drop(final[final[criteria] < min_criteria].index)
+            final = final.drop(final[final[metric] < min_criteria].index)
         if min_criteria is not None:
-            final = final.drop(final[final[criteria] > max_criteria].index)
+            final = final.drop(final[final[metric] > max_criteria].index)
         if count_min is not None:
             final = final.drop(final[final["Max ER - Count"] < count_min].index)    
-        final = final.sort_values(by = criteria, ascending = False)
+        if ascending_method == True:
+            final = final.sort_values(by = metric, ascending =  True)
+        else:
+            final = final.sort_values(by = metric, ascending = False)
         if n is not None:
             final = final.iloc[1:n,:]
-        variables_selected = final["name"].values
+        variables_selected = list(final["name"].values)
         if force_var is not None:
-            for i in range(len(force_var)):
-                variables_selected.append(force_var[i])
+            variables_selected = variables_selected + force_var
         variables_selected = list(set(variables_selected))
         self.selection = variables_selected
+        return(self)
 
 
 
