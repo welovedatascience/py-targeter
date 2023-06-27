@@ -12,6 +12,8 @@ format:
     page-layout: full
     embed-resources: true
     standalone: true
+    fig-width: 6
+    fig-height: 3.5
 execute:
   echo: false # hides code by default
   warning: false
@@ -106,15 +108,35 @@ tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
 #<IDEA> extend itables python package to add advanced search functionality
 tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
 
-show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
+
 
 
 ```
 
+<!--https://quarto.org/docs/authoring/conditional.html-->
+::: {.content-visible when-format="html"}
+```{python}
+# Will only appear in HTML.
+show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
+```
+:::
+
+
+
+::: {.content-visible unless-format="html"}
+```{python}
+# Will only appear in HTML.
+tab_sum
+```
+:::
+
+
+
+
 ## Variables
 
 ```{python}
-#| results: asis
+#| output: asis
 import matplotlib.pyplot as pyplot
 from adjustText import adjust_text
 
@@ -150,19 +172,12 @@ for ivar in list(tar.profiles.variable_names):
   from IPython.display import display, Markdown
   display(Markdown(f"""{itxt}"""))
 
-  
-  display(Markdown("\n\n::: {layout-ncol=2}\n\n"))
-
-
-
+#https://stackoverflow.com/questions/74162212/two-columns-layout-in-quarto
+# https://quarto.org/docs/authoring/figures.html
+  display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
   tar.plot(ivar)
 
   tar.quadrant_plot(ivar)
-
-  pyplot.subplots_adjust(wspace=0.5)
-
-  pyplot.show()
-
 
 
 
