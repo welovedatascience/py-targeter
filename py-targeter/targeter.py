@@ -142,7 +142,7 @@ class Targeter():
 
         self.profiles = all_optb
         self.selection = self.variable_names
-        self.filtered = True    
+        self.filtered = False   
 
 
     # def get_binning_table(self, name):
@@ -219,8 +219,22 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter'):
-        
+    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False):
+        if filter == "auto":
+            if self.filtered == False:
+                a1 = self.filter(n=filter_n,metric="iv").selection
+                a2 = self.filter(n=filter_n,metric="quality_score").selection
+                a4 = self.filter(n=filter_n,metric="js").selection 
+                self.selection = list(set(a1 + a2 + a3 + a4))
+                if self.target_type == "binary":
+                    a3 = self.fitler(n=filter_n,metric="Max Event Rate", count_min=filter_count_min).selection
+                    a5 = self.filter(n=20,metric="gini").selection
+                    self.selection = list(set(self.selection + a5 + a3))
+                if self.target_type == "binary":
+                    a3 = self.fitler(n=filter_n,metric="Max Mean", count_min=filter_count_min).selection
+                    self.selection = list(set(self.selection + a3))
+                self.filtered = True
+        self.selection = list(set(self.selection + force_var))
         # create temporary folder
         tmpdir = mkdtemp(prefix = 'targeter_')
 
@@ -254,7 +268,10 @@ class Targeter():
         out_file = os.path.join(out_directory, out_file+'.'+out_format)
         
         report_file = os.path.join(tmpdir, 'generated_report')
-        shutil.copy(report_file, out_file)    
+        shutil.copy(report_file, out_file)
+
+        if delete_tmp == True:
+                os.remove(tmpdir, 'targeter.py')
         
 
 
@@ -361,13 +378,16 @@ class Targeter():
                 labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
     
-    def filter(self,metric:str="iv",n:int=None,min_criteria:float=None, count_min:int = None,force_var:list = None,max_criteria:float = None, ascending_method:bool = False):
+    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, ascending_method:bool = False):
         final = self.summary()
-        if metric not in ['iv', 'js', 'gini', 'quality_score']:
-            raise Exception("This is not a metric")
-        if min_criteria is not None:
-            final = final.drop(final[final[metric] < min_criteria].index)
-        if min_criteria is not None:
+        continuous_metrics = ["iv", "js", "gini", "quality_score", "Max Mean"]
+        binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
+        if target_type == "binary" and metric not in binary_metrics:
+                raise Exception("{} does not match available metrics".format(metric))
+        if target_type == "continuous" and metric not in continuous_metrics:
+                raise Exception("{} does not match available metrics".format(metric))
+        final = final.drop(final[final[metric] < min_criteria].index)
+        if max_criteria is not None:
             final = final.drop(final[final[metric] > max_criteria].index)
         if count_min is not None:
             final = final.drop(final[final["Max ER - Count"] < count_min].index)    
@@ -382,6 +402,7 @@ class Targeter():
             variables_selected = variables_selected + force_var
         variables_selected = list(set(variables_selected))
         self.selection = variables_selected
+        self.filtered = True
         return(self)
 
 
