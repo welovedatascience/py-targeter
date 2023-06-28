@@ -12,32 +12,41 @@ format:
     page-layout: full
     embed-resources: true
     standalone: true
-    fig-width: 6
-    fig-height: 3.5
 execute:
   echo: false # hides code by default
+  eval: true
   warning: false
 ---
 
 
+
+
+```{python}
+#| eval: true
+
+
+```
+
 ```{python}
 import papermill
-import targeter
+```
+
+
+```{python}
+#| tags: [parameters]
+
+tmpdir = '.'
+
+```
+```{python}
 from IPython.display import display, HTML
 from itables import init_notebook_mode, show
 import os
 init_notebook_mode(all_interactive=False)
-```
+# tmpdir = os.environ['TARGETER_TMPDIR']
 
-```{python}
-#| tags: [parameters]
-tmpdir = '.'
-```
-
-
-
-```{python}
-
+exec(open(os.path.join(tmpdir, 'targeter.py')).read())
+print(tmpdir)
 tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
 
 
@@ -88,57 +97,94 @@ tar.target_stats
 
 ## Summary view
 
-
 ```{python}
+
 tab_sum = tar.summary()
+
 tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N'}, inplace = True)
+
 tab_sum.sort_values(by=['qs'], ascending = False)
+
 vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N']
+
 tab_sum = tab_sum[vars]
+
 tab_sum = tab_sum.astype({'iv': float, 'qs': float}) # https://dev.to/theolakusibe/solving-attributeerror-float-object-has-no-attribute-rint-4la#:~:text=Solution%20To%20convert%20the%20column%20with%20a%20mixed,by%20using%20the%20pandas.DataFrame.astype%20function%2C%20as%20illustrated%20below
+
 tab_sum['iv'] = tab_sum['iv'].round(3)
+
 tab_sum['qs'] = tab_sum['qs'].round(3)
 
 
+
+
+
 # add hyperlinks -- # df2$variable <- paste0("<a href='#var-",tolower(df2$variable),"'>",df2$variable,"</a>")
+
 tab_sum['name']= tab_sum['name'].map(lambda cell: "<a href='#var-" + cell.lower() +"'>"+cell+"</a>")
+
 tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
 
+
+
+
 # wrap text https://stackoverflow.com/questions/63286431/datatables-js-not-wrapping-cell-text#:~:text=You%20can%20try%20creating%20a%20class%20and%20then,data%20%2B%20%22%3C%2Fdiv%3E%22%3B%20%7D%2C%20targets%3A%202%20%7D%20%5D
+
 #<IDEA> extend itables python package to add advanced search functionality
+
 tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
 
 
 
 
+
+
+
 ```
 
+
+
+
 <!--https://quarto.org/docs/authoring/conditional.html-->
+
 ::: {.content-visible when-format="html"}
+
 ```{python}
+
 # Will only appear in HTML.
+
 show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
+
 ```
+
 :::
+
+
+
 
 
 
 ::: {.content-visible unless-format="html"}
+
 ```{python}
+
 # Will only appear in HTML.
+
 tab_sum
+
 ```
+
 :::
-
-
 
 
 ## Variables
 
 ```{python}
 #| output: asis
+
 import matplotlib.pyplot as pyplot
 from adjustText import adjust_text
+
 
 def label(var, metadata = None):
   if metadata is None:
@@ -152,41 +198,29 @@ def format_df(df, index = True):
 # loop over variables
 for ivar in list(tar.profiles.variable_names):
   # display title+anchor for links
-  # from IPython.display import display, Markdown
-  # display(Markdown(f"""
-  # ### {ivar} 
-  
-  # """))
 
-# cat(paste0("<div id='var-",tolower(ivar),"'>\n\n## ",label(ivar, metadata=metadata), ifelse(ivar_label!=ivar, paste0(" (",ivar,")"),""),"\n</div>"))
-  ivar_label = label(ivar, metadata) 
-
-
+  ivar_label = label(ivar, metadata)
   itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
 
   if (ivar_label != ivar):
     itxt = itxt + "(" + ivar + ")"
   itxt = itxt + "\n</div>"
 
-
   from IPython.display import display, Markdown
   display(Markdown(f"""{itxt}"""))
 
 #https://stackoverflow.com/questions/74162212/two-columns-layout-in-quarto
 # https://quarto.org/docs/authoring/figures.html
+
   display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
+
   tar.plot(ivar)
 
   tar.quadrant_plot(ivar)
 
-
-
-  # tar.quadrant_plot(ivar)
-
   vars =['Bin','Count', 'Count (%)', 'Event rate','WoE']
   format_df(tar.get_table(ivar)[vars])
-  # plot
-  display(Markdown("\n\n:::\n\n"))
 
+  display(Markdown("\n\n:::\n\n"))
 
 ```

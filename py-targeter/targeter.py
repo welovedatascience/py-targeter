@@ -4,7 +4,7 @@ from optbinning import BinningProcess
 import inspect
 import numpy as np
 from tempfile import mkdtemp
-import os
+import os 
 import shutil
 from pickle import dump
 import subprocess
@@ -100,10 +100,10 @@ class Targeter():
             for a in range(len(self.index)):
                     if self.index[a]==target_reference_level:
                         self.target_stats.loc[self.index[a],"target_reference_level"] = "x"
+            
+        if self.target_type in ["binary", "continuous"]:
             self.mean = data[target].mean()
         
-            
-
 #            if type(format_target) == str:,
         # prepare list of variables
         # prepare  data: X and y
@@ -141,7 +141,7 @@ class Targeter():
         #    all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
         self.profiles = all_optb
-        self.selection = self.variable_names
+        self.selection = list(data.columns)
         self.filtered = False   
 
 
@@ -225,49 +225,61 @@ class Targeter():
                 a1 = self.filter(n=filter_n,metric="iv").selection
                 a2 = self.filter(n=filter_n,metric="quality_score").selection
                 a4 = self.filter(n=filter_n,metric="js").selection 
-                self.selection = list(set(a1 + a2 + a3 + a4))
+                self.selection = list(set(a1 + a2 + a4))
                 if self.target_type == "binary":
-                    a3 = self.fitler(n=filter_n,metric="Max Event Rate", count_min=filter_count_min).selection
+                    a3 = self.filter(n=filter_n,metric="Max Event Rate", count_min=filter_count_min).selection
                     a5 = self.filter(n=20,metric="gini").selection
-                    self.selection = list(set(self.selection + a5 + a3))
-                if self.target_type == "binary":
-                    a3 = self.fitler(n=filter_n,metric="Max Mean", count_min=filter_count_min).selection
-                    self.selection = list(set(self.selection + a3))
+                    self.selection = list(set(list(self.selection) + list(a5) + list(a3)))
+                if self.target_type == "continuous":
+                    a3 = self.filter(n=filter_n,metric="Max Mean", count_min=filter_count_min).selection
+                    self.selection = list(set(list(self.selection)+ list(a3)))
                 self.filtered = True
-        self.selection = list(set(self.selection + force_var))
+        if force_var is not None:
+            self.selection = list(set(list(self.selection) + list(force_var)))
+        else:
+            self.selection = list(set(list(self.selection)))
         # create temporary folder
         tmpdir = mkdtemp(prefix = 'targeter_')
 
 
         # copy template in it
         if (template is None):
-            # default template:
+        # default template:
             template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
         shutil.copy(template, to_template)    
-        
+
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
-        
-        self.save(tar_pickle_path)
-        
+        self.save( tar_pickle_path)
 
         ## <!> temporary: need package and installed package to work...
-        
+
         tofile = os.path.join(tmpdir, 'targeter.py')
         shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
-        
 
+        
+        os.environ['TARGETER_TMPDIR'] = tmpdir
         #ff
-        cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tmpdir:"'+ tmpdir + '"' + ' --to ' + out_format
+
+
+        cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"' + tmpdir + '" --to ' + out_format
+
+        # cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tmpdir:"'+ tmpdir + '"' + ' --to ' + out_format
+        # cmd =  'quarto render targeter-report.qmd --output generated_report --to ' + out_format
+
+
+
+
+
         p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
-        p.wait()    
+        p.wait() 
         
 
         if out_file is None:
             out_file = 'report'
         out_file = os.path.join(out_directory, out_file+'.'+out_format)
-        
-        report_file = os.path.join(tmpdir, 'generated_report')
+
+        report_file = os.path.join(tmpdir, 'generated_report').replace(os.sep,"/")
         shutil.copy(report_file, out_file)
 
         if delete_tmp == True:
@@ -279,72 +291,44 @@ class Targeter():
 
     def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, add_specials=False, show=False):
         #Choose whether to show missing values or not 
-        x = self.get_table(name)
-        if add_missing == False:
-            x = x.drop(x[x["Bin"] == "Missing"].index)
+        df = self.get_table(name)
         if add_specials == False:
-            x = x.drop(x[x["Bin"] == "Special"].index)
-        x = x["Count"].values
-        labels = self.get_table(name)[["Bin"]].values
-        if self.target_type == "binary":
-            y = self.get_table(name)
-            if add_specials == False:
-                y = y.drop(y[y["Bin"] == "Special"].index)
-            if add_missing == False:
-                y = y.drop(y[y["Bin"] == "Missing"].index)
-            if add_specials == False and add_missing == False:
-                y = y.drop(y[y["Bin"] == "Special"].index)
-                y = y.drop(y[y["Bin"] == "Missing"].index)
-            y = y["Event rate"].values
-            pyplot.scatter(x, y)
-            pyplot.xlabel(xlab)
-           
+            df = df[~df["Bin"].isin(['Special'])]
+        if add_missing == False:
+            df = df[~df["Bin"].isin(['Index'])]
+        labels = df["Bin"].values
         
-
-            texts = []
-            for i in range(len(x)):
-                text_label = ' '.join(str(label) for label in labels[i])
-                texts.append(pyplot.text(x[i], y[i], text_label))
-
-            adjust_text(texts)
-            z = [self.mean for i in range(len(x))]
-            if title is None:
-                title = name
+        x = df["Count"].values
+          
+        if self.target_type == "binary":
+            y = df["Event rate"].values
             if ylab == None:
                 ylab ="Event rate"
-            pyplot.ylabel(ylab)
-            pyplot.plot(x, z, color=color)
-            pyplot.title(title)
         
         if self.target_type == "continuous":
-            y = self.get_table(name)
-            if add_missing == False:
-                y = y.drop(y[y["Bin"] == "Missing"].index)
-            if add_specials == False:
-                y = y.drop(y[y["Bin"] == "Special"].index)
-            if add_specials == False and add_missing == False:
-                y = y.drop(y[y["Bin"] == "Special"].index)
-                y = y.drop(y[y["Bin"] == "Missing"].index)
-            y = y["Mean"].values
-            pyplot.scatter(x, y)
-            pyplot.xlabel(xlab)
-            
-        
-
-            texts = []
-            for i in range(len(x)):
-                text_label = ' '.join(str(label) for label in labels[i])
-                texts.append(pyplot.text(x[i], y[i], text_label))
-
-            adjust_text(texts)
-            if title is None and self._metadata is not None:
-                title = labels(name)
-            else:
-                title = name 
+            y = df["Mean"].values
             if ylab == None:
-                ylab = "Mean"
-            pyplot.ylabel(ylab)
-            pyplot.title(title)
+                ylab ="Mean"
+    
+        pyplot.scatter(x, y)
+        pyplot.xlabel(xlab)
+           
+        texts = []
+        for i in range(len(x)):
+            text_label = ' '.join(str(label) for label in labels[i])
+            texts.append(pyplot.text(x[i], y[i], text_label))
+
+        adjust_text(texts)
+
+        z = [self.mean for i in range(len(x))]
+        pyplot.plot(x, z, color=color)
+
+        if title is None:
+            title = name
+        pyplot.title(title)
+
+        pyplot.ylabel(ylab)
+        
         if show == True:
                 pyplot.show()
 
@@ -378,20 +362,20 @@ class Targeter():
                 labels_descriptions.append(str(final["label"].values[i]))
         return(labels_descriptions)
     
-    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, ascending_method:bool = False):
+    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
         final = self.summary()
         continuous_metrics = ["iv", "js", "gini", "quality_score", "Max Mean"]
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
-        if target_type == "binary" and metric not in binary_metrics:
+        if self.target_type == "binary" and metric not in binary_metrics:
                 raise Exception("{} does not match available metrics".format(metric))
-        if target_type == "continuous" and metric not in continuous_metrics:
+        if self.target_type == "continuous" and metric not in continuous_metrics:
                 raise Exception("{} does not match available metrics".format(metric))
         final = final.drop(final[final[metric] < min_criteria].index)
         if max_criteria is not None:
             final = final.drop(final[final[metric] > max_criteria].index)
         if count_min is not None:
             final = final.drop(final[final["Max ER - Count"] < count_min].index)    
-        if ascending_method == True:
+        if sort_method == True:
             final = final.sort_values(by = metric, ascending =  True)
         else:
             final = final.sort_values(by = metric, ascending = False)
