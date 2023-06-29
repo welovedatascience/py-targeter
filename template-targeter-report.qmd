@@ -27,15 +27,12 @@ execute:
 
 ```
 
-```{python}
-import papermill
-```
+
 
 
 ```{python}
-#| tags: [parameters]
-
-tmpdir = '.'
+import os
+tmpdir = os.environ['TARGETER_TMPDIR']
 
 ```
 ```{python}
