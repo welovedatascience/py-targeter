@@ -250,8 +250,8 @@ class Targeter():
         shutil.copy(template, to_template)    
 
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
-        tar.save( tar_pickle_path)
-
+        self.save( tar_pickle_path)
+ 
         ## <!> temporary: need package and installed package to work...
 
         tofile = os.path.join(tmpdir, 'targeter.py')
