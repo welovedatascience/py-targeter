@@ -1,15 +1,24 @@
 exec(open('py-targeter/targeter.py').read())
 
 
+import os
 
+# tmpdir = os.environ['TARGETER_TMPDIR']  
+C:\Users\natha\AppData\Local\Temp\
 
+tmpdir = 'C:/Users/natha/AppData/Local/Temp/targeter_81977cpp'
+# tmpdir = 'C:/Users/natha/AppData/Local/Temp/targeter_a'
+#
+# ff
+
+print(tmpdir)
 df = pd.read_csv("C:/Users/natha/OneDrive/Documents/WeLoveDataScience/adult.csv")
 target = 'ABOVE50K'
 #targeter.autoguess(df,target)
 tar = Targeter(df,target=target)
 df[target].describe().values[1]
 # create temporary folder
-tmpdir = 'C:/Temp'
+#tmpdir = 'C:/Users/natha/AppData/Local/Temp/targeter_a'
 # mkdtemp(prefix = 'targeter_')
 
 
@@ -38,9 +47,7 @@ tar.save( tar_pickle_path)
 tofile = os.path.join(tmpdir, 'targeter.py')
 shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
 
-import os
-os.environ['TARGETER_TMPDIR'] = tmpdir
-#ff
+import subprocess
 
 
 cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"' + tmpdir + '" --to ' + out_format
@@ -51,8 +58,8 @@ cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"
 
 
 
-
-p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
+import papermill
+p = subprocess.Popen(cmd, cwd=tmpdir, shell=True)
 p.wait()    
 
 

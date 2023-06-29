@@ -42,6 +42,7 @@ tmpdir = '.'
 from IPython.display import display, HTML
 from itables import init_notebook_mode, show
 import os
+
 init_notebook_mode(all_interactive=False)
 # tmpdir = os.environ['TARGETER_TMPDIR']
 

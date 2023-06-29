@@ -244,13 +244,13 @@ class Targeter():
 
         # copy template in it
         if (template is None):
-        # default template:
+            # default template:
             template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
         shutil.copy(template, to_template)    
 
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
-        self.save( tar_pickle_path)
+        tar.save( tar_pickle_path)
 
         ## <!> temporary: need package and installed package to work...
 
@@ -258,7 +258,7 @@ class Targeter():
         shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
 
         
-        os.environ['TARGETER_TMPDIR'] = tmpdir
+
         #ff
 
 
@@ -271,7 +271,7 @@ class Targeter():
 
 
 
-        p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
+        p = subprocess.Popen(cmd, cwd=tmpdir, shell=False, stdout=subprocess.PIPE)
         p.wait() 
         
 
