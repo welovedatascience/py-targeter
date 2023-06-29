@@ -262,7 +262,8 @@ class Targeter():
         #ff
 
 
-        cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"' + tmpdir + '" --to ' + out_format
+        # cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"' + tmpdir + '" --to ' + out_format
+        cmd =  'quarto render targeter-report.qmd --output generated_report  --to ' + out_format
 
         # cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tmpdir:"'+ tmpdir + '"' + ' --to ' + out_format
         # cmd =  'quarto render targeter-report.qmd --output generated_report --to ' + out_format
