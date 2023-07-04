@@ -99,11 +99,11 @@ tar.target_stats
 
 tab_sum = tar.summary()
 
-tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N'}, inplace = True)
+tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
 
 tab_sum.sort_values(by=['qs'], ascending = False)
 
-vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N']
+vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
 
 tab_sum = tab_sum[vars]
 
@@ -119,7 +119,7 @@ tab_sum['qs'] = tab_sum['qs'].round(3)
 
 # add hyperlinks -- # df2$variable <- paste0("<a href='#var-",tolower(df2$variable),"'>",df2$variable,"</a>")
 
-tab_sum['name']= tab_sum['name'].map(lambda cell: "<a href='#var-" + cell.lower() +"'>"+cell+"</a>")
+tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'] = tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'].map(lambda cell: "<a href='#var-" + cell.lower() + "'>" + cell + "</a>")
 
 tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
 
@@ -194,7 +194,7 @@ def format_df(df, index = True):
     return display(HTML(df.to_html(index=index)))
 
 # loop over variables
-for ivar in list(tar.profiles.variable_names):
+for ivar in list(tar.selection):
   # display title+anchor for links
 
   ivar_label = label(ivar, metadata)

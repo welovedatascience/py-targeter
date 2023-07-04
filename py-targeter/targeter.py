@@ -156,6 +156,7 @@ class Targeter():
 
         out = self.profiles.summary()
         
+        
         tmp_df = pd.DataFrame() 
         if self.target_type == "binary":
             for ivar in out['name'].values:
@@ -186,9 +187,18 @@ class Targeter():
 
         out = pd.concat([out, tmp_df], axis = 1, join = 'inner')
         out['Max ER - Bin'] = out['Max ER - Bin'].map(lambda cell: np.array2string(cell) if isinstance(cell,np.ndarray)  else cell)
+        out['Selected'] = ''
+        for i in range(len(out.columns)):
+            if out["name"].values[i] in self.selection:
+                out.loc[i,"Selected"] = "x"
+        out = out.sort_values(by = "Selected", ascending = False)
         if self._metadata is not None:
                 out = pd.merge(out, self._metadata)
-                out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count']]
+                out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count','Selected']]
+        
+        
+
+        
         return(out)
 
 #    def transform(self, x, y):
@@ -244,7 +254,7 @@ class Targeter():
 
         # copy template in it
         if (template is None):
-            # default template:
+        # default template:
             template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
         shutil.copy(template, to_template)    
@@ -258,7 +268,7 @@ class Targeter():
         shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
 
         
-
+        os.environ['TARGETER_TMPDIR'] = tmpdir
         #ff
 
 
@@ -272,7 +282,7 @@ class Targeter():
 
 
 
-        p = subprocess.Popen(cmd, cwd=tmpdir, shell=False, stdout=subprocess.PIPE)
+        p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
         p.wait() 
         
 
@@ -389,6 +399,19 @@ class Targeter():
         self.selection = variables_selected
         self.filtered = True
         return(self)
+
+
+
+
+    
+        
+
+
+        
+        
+
+
+
 
 
 
