@@ -96,42 +96,75 @@ tar.target_stats
 ## Summary view
 
 ```{python}
+if tar.target_type == "binary":
+  tab_sum = tar.summary()
 
-tab_sum = tar.summary()
+  tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
 
-tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
+  tab_sum.sort_values(by=['qs'], ascending = False)
 
-tab_sum.sort_values(by=['qs'], ascending = False)
+  vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
 
-vars = ['name','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
+  tab_sum = tab_sum[vars]
 
-tab_sum = tab_sum[vars]
+  tab_sum = tab_sum.astype({'iv': float, 'qs': float}) # https://dev.to/theolakusibe/solving-attributeerror-float-object-has-no-attribute-rint-4la#:~:text=Solution%20To%20convert%20the%20column%20with%20a%20mixed,by%20using%20the%20pandas.DataFrame.astype%20function%2C%20as%20illustrated%20below
 
-tab_sum = tab_sum.astype({'iv': float, 'qs': float}) # https://dev.to/theolakusibe/solving-attributeerror-float-object-has-no-attribute-rint-4la#:~:text=Solution%20To%20convert%20the%20column%20with%20a%20mixed,by%20using%20the%20pandas.DataFrame.astype%20function%2C%20as%20illustrated%20below
+  tab_sum['iv'] = tab_sum['iv'].round(3)
 
-tab_sum['iv'] = tab_sum['iv'].round(3)
-
-tab_sum['qs'] = tab_sum['qs'].round(3)
-
-
-
-
-
-# add hyperlinks -- # df2$variable <- paste0("<a href='#var-",tolower(df2$variable),"'>",df2$variable,"</a>")
-
-tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'] = tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'].map(lambda cell: "<a href='#var-" + cell.lower() + "'>" + cell + "</a>")
-
-tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
+  tab_sum['qs'] = tab_sum['qs'].round(3)
 
 
 
 
-# wrap text https://stackoverflow.com/questions/63286431/datatables-js-not-wrapping-cell-text#:~:text=You%20can%20try%20creating%20a%20class%20and%20then,data%20%2B%20%22%3C%2Fdiv%3E%22%3B%20%7D%2C%20targets%3A%202%20%7D%20%5D
 
-#<IDEA> extend itables python package to add advanced search functionality
+  # add hyperlinks -- # df2$variable <- paste0("<a href='#var-",tolower(df2$variable),"'>",df2$variable,"</a>")
 
-tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
+  tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'] = tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'].map(lambda cell: "<a href='#var-" + cell.lower() + "'>" + cell + "</a>")
 
+  tab_sum['MaxBin Rate'] = tab_sum['MaxBin Rate'].round(3)
+
+
+
+
+  # wrap text https://stackoverflow.com/questions/63286431/datatables-js-not-wrapping-cell-text#:~:text=You%20can%20try%20creating%20a%20class%20and%20then,data%20%2B%20%22%3C%2Fdiv%3E%22%3B%20%7D%2C%20targets%3A%202%20%7D%20%5D
+
+  #<IDEA> extend itables python package to add advanced search functionality
+
+  tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
+
+if tar.target_type == "continuous":
+  tab_sum = tar.summary()
+
+  tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Mean':'MaxBin Mean','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
+
+  tab_sum.sort_values(by=['qs'], ascending = False)
+
+  vars = ['name','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
+
+  tab_sum = tab_sum[vars]
+
+  tab_sum = tab_sum.astype({'qs': float}) # https://dev.to/theolakusibe/solving-attributeerror-float-object-has-no-attribute-rint-4la#:~:text=Solution%20To%20convert%20the%20column%20with%20a%20mixed,by%20using%20the%20pandas.DataFrame.astype%20function%2C%20as%20illustrated%20below
+
+  tab_sum['qs'] = tab_sum['qs'].round(3)
+
+
+
+
+
+  # add hyperlinks -- # df2$variable <- paste0("<a href='#var-",tolower(df2$variable),"'>",df2$variable,"</a>")
+
+  tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'] = tab_sum.loc[tab_sum["name"].isin(tar.selection), 'name'].map(lambda cell: "<a href='#var-" + cell.lower() + "'>" + cell + "</a>")
+
+  tab_sum['MaxBin mean'] = tab_sum['MaxBin Mean'].round(3)
+
+
+
+
+  # wrap text https://stackoverflow.com/questions/63286431/datatables-js-not-wrapping-cell-text#:~:text=You%20can%20try%20creating%20a%20class%20and%20then,data%20%2B%20%22%3C%2Fdiv%3E%22%3B%20%7D%2C%20targets%3A%202%20%7D%20%5D
+
+  #<IDEA> extend itables python package to add advanced search functionality
+
+  tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
 
 
 
@@ -184,6 +217,7 @@ import matplotlib.pyplot as pyplot
 from adjustText import adjust_text
 
 
+
 def label(var, metadata = None):
   if metadata is None:
     return(var)
@@ -194,31 +228,36 @@ def format_df(df, index = True):
     return display(HTML(df.to_html(index=index)))
 
 # loop over variables
-for ivar in list(tar.selection):
-  # display title+anchor for links
 
-  ivar_label = label(ivar, metadata)
-  itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
+if tar.metadata is not None:
+  for ivar in list(tar.selection):
+    # display title+anchor for links
 
-  if (ivar_label != ivar):
-    itxt = itxt + "(" + ivar + ")"
-  itxt = itxt + "\n</div>"
+    ivar_label = tar.label(ivar)
+    itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
 
-  from IPython.display import display, Markdown
-  display(Markdown(f"""{itxt}"""))
+    if (ivar_label != ivar):
+      itxt = itxt + "(" + ivar + ")"
+    itxt = itxt + "\n</div>"
 
-#https://stackoverflow.com/questions/74162212/two-columns-layout-in-quarto
-# https://quarto.org/docs/authoring/figures.html
+    from IPython.display import display, Markdown
+    display(Markdown(f"""{itxt}"""))
 
-  display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
+  #https://stackoverflow.com/questions/74162212/two-columns-layout-in-quarto
+  # https://quarto.org/docs/authoring/figures.html
 
-  tar.plot(ivar)
+    display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
 
-  tar.quadrant_plot(ivar)
+    tar.plot(ivar)
 
-  vars =['Bin','Count', 'Count (%)', 'Event rate','WoE']
-  format_df(tar.get_table(ivar)[vars])
+    tar.quadrant_plot(ivar)
 
-  display(Markdown("\n\n:::\n\n"))
+    if tar.target_type == "binary":
+      vars = ['Bin','Count', 'Count (%)', 'Event rate','WoE']
+    if tar.target_type == "continuous":
+      vars = ['Bin','Count', 'Count (%)', 'Mean','WoE']
+    format_df(tar.get_table(ivar)[vars])
+
+    display(Markdown("\n\n:::\n\n"))
 
 ```

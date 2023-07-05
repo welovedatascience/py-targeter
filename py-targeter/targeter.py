@@ -100,6 +100,8 @@ class Targeter():
             for a in range(len(self.index)):
                     if self.index[a]==target_reference_level:
                         self.target_stats.loc[self.index[a],"target_reference_level"] = "x"
+        else:
+            self.target_stats = None
             
         if self.target_type in ["binary", "continuous"]:
             self.mean = data[target].mean()
@@ -112,8 +114,8 @@ class Targeter():
         #     select_vars[~(select_vars == target)]
         # if (exclude_vars != None):
         #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))]        
-        
-        select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
+        if exclude_vars is not None:
+            select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
         
         self.variable_names = select_vars
 
@@ -141,7 +143,10 @@ class Targeter():
         #    all_optb._binned_variables[ivar].binning_table.build(add_totals=False)
 
         self.profiles = all_optb
-        self.selection = list(data.columns)
+        if select_vars is None:
+            self.selection = list(data.columns)
+        else:
+            self.selection = select_vars
         self.filtered = False   
 
 
@@ -188,7 +193,7 @@ class Targeter():
         out = pd.concat([out, tmp_df], axis = 1, join = 'inner')
         out['Max ER - Bin'] = out['Max ER - Bin'].map(lambda cell: np.array2string(cell) if isinstance(cell,np.ndarray)  else cell)
         out['Selected'] = ''
-        for i in range(len(out.columns)):
+        for i in range(len(out["name"].values)):
             if out["name"].values[i] in self.selection:
                 out.loc[i,"Selected"] = "x"
         out = out.sort_values(by = "Selected", ascending = False)
@@ -232,14 +237,14 @@ class Targeter():
     def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False):
         if filter == "auto":
             if self.filtered == False:
-                a1 = self.filter(n=filter_n,metric="iv").selection
                 a2 = self.filter(n=filter_n,metric="quality_score").selection
-                a4 = self.filter(n=filter_n,metric="js").selection 
-                self.selection = list(set(a1 + a2 + a4))
+                self.selection = list(set(a2))
                 if self.target_type == "binary":
+                    a4 = self.filter(n=filter_n,metric="js").selection 
+                    a1 = self.filter(n=filter_n,metric="iv").selection
                     a3 = self.filter(n=filter_n,metric="Max Event Rate", count_min=filter_count_min).selection
                     a5 = self.filter(n=20,metric="gini").selection
-                    self.selection = list(set(list(self.selection) + list(a5) + list(a3)))
+                    self.selection = list(set(list(self.selection) + list(a5) + list(a3) + list(a1) + list(a4)))
                 if self.target_type == "continuous":
                     a3 = self.filter(n=filter_n,metric="Max Mean", count_min=filter_count_min).selection
                     self.selection = list(set(list(self.selection)+ list(a3)))
