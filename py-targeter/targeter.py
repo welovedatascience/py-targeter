@@ -113,10 +113,16 @@ class Targeter():
             select_vars = data.columns.values
         #     select_vars[~(select_vars == target)]
         # if (exclude_vars != None):
-        #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))]        
+        #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))] 
+        execeed_modality_number_variables = data.columns[data.nunique() > 30].tolist()       
         if exclude_vars is not None:
-            select_vars = select_vars[(~np.isin(select_vars,[target, exclude_vars]))]        
+            exclude_vars = list(set(exclude_vars + execeed_modality_number_variables))
+            select_vars = list(set(select_vars).difference(exclude_vars))
+        else:
+            exclude_vars_n = {target} | set(execeed_modality_number_variables)
+            select_vars = list(set(select_vars).difference(exclude_vars_n))
         
+
         self.variable_names = select_vars
 
         # prepare data for optbinni

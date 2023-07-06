@@ -229,35 +229,37 @@ def format_df(df, index = True):
 
 # loop over variables
 
-if tar.metadata is not None:
-  for ivar in list(tar.selection):
-    # display title+anchor for links
 
+for ivar in list(tar.selection):
+    # display title+anchor for links
+  if tar._metadata is not None:
     ivar_label = tar.label(ivar)
     itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
 
     if (ivar_label != ivar):
       itxt = itxt + "(" + ivar + ")"
     itxt = itxt + "\n</div>"
+  else:
+    itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar
 
-    from IPython.display import display, Markdown
-    display(Markdown(f"""{itxt}"""))
+  from IPython.display import display, Markdown
+  display(Markdown(f"""{itxt}"""))
 
   #https://stackoverflow.com/questions/74162212/two-columns-layout-in-quarto
   # https://quarto.org/docs/authoring/figures.html
 
-    display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
+  display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
 
-    tar.plot(ivar)
+  tar.plot(ivar)
 
-    tar.quadrant_plot(ivar)
+  tar.quadrant_plot(ivar)
 
-    if tar.target_type == "binary":
-      vars = ['Bin','Count', 'Count (%)', 'Event rate','WoE']
-    if tar.target_type == "continuous":
-      vars = ['Bin','Count', 'Count (%)', 'Mean','WoE']
-    format_df(tar.get_table(ivar)[vars])
+  if tar.target_type == "binary":
+    vars = ['Bin','Count', 'Count (%)', 'Event rate','WoE']
+  if tar.target_type == "continuous":
+    vars = ['Bin','Count', 'Count (%)', 'Mean','WoE']
+  format_df(tar.get_table(ivar)[vars])
 
-    display(Markdown("\n\n:::\n\n"))
+  display(Markdown("\n\n:::\n\n"))
 
 ```
