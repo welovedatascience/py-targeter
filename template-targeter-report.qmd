@@ -233,7 +233,7 @@ def format_df(df, index = True):
 for ivar in list(tar.selection):
     # display title+anchor for links
   if tar._metadata is not None:
-    ivar_label = tar.label(ivar)
+    ivar_label = tar.label(ivar)[0]
     itxt = "<div id='var-" + ivar.lower() + "'>\n\n## " + ivar_label
 
     if (ivar_label != ivar):

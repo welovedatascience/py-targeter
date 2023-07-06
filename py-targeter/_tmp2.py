@@ -31,7 +31,7 @@ df = df.drop(df[df['R_Client_Taux_de_plainte'] == np.inf].index)
 df = df.drop(df[df['R_Client_pct_enquete_repondu'] == np.inf].index)
 
 tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),select_vars=['B_NOTANSWER_O363'])
-
+tar.set_metadata(meta=meta,var_col="Nom colonne",label_col="newname")
 
 
 out_directory='.'

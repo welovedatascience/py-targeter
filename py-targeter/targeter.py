@@ -205,8 +205,10 @@ class Targeter():
         out = out.sort_values(by = "Selected", ascending = False)
         if self._metadata is not None:
                 out = pd.merge(out, self._metadata)
-                out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count','Selected']]
-        
+                if self.target_type == "binary":
+                    out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count','Selected']]
+                if self.target_type == "continuous":
+                    out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'quality_score', 'Max ER - Bin', 'Max Mean', 'Max ER - Count','Selected']]
         
 
         
