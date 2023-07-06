@@ -43,7 +43,7 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None, **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
         frame = inspect.currentframe()
         dfname=''
@@ -59,7 +59,7 @@ class Targeter():
         proportions = counts / len(data)
         self.index = list(data[target].unique())
         index = list(data[target].unique())
-        self._metadata = None
+        self.set_metadata(meta=metadata)
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
