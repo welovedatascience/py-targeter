@@ -40,12 +40,19 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
         return "unknown"
 #autoguess(df, " ABOVE50K")
 
+def check_inf(data:pd.DataFrame):
+    numeric_columns = data.select_dtypes(include=[np.number]).columns
+    for column in numeric_columns:
+        if np.inf in data[column].values:
+            return True
+    return False
+
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname", **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missings:str = "Any", include_specials:str = "Never", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
-        if np.isinf(datta.values).any():
+        if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
         frame = inspect.currentframe()
         dfname=''
@@ -159,6 +166,9 @@ class Targeter():
         else:
             self.selection = select_vars
         self.filtered = False   
+        self.include_missings = include_missings
+        self.include_specials = include_specials
+
 
 
     # def get_binning_table(self, name):
@@ -247,7 +257,7 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False, inlude_missing:str = "Never"):
+    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False):
         if filter == "auto":
             if self.filtered == False:
                 a2 = self.filter(n=filter_n,metric="quality_score").selection
