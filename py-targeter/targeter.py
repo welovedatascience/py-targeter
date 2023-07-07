@@ -43,8 +43,10 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None, **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
+        if np.isinf(datta.values).any():
+            raise Exception("Infinite values in your dataset")
         frame = inspect.currentframe()
         dfname=''
         try:
@@ -59,7 +61,6 @@ class Targeter():
         proportions = counts / len(data)
         self.index = list(data[target].unique())
         index = list(data[target].unique())
-        self.set_metadata(meta=metadata)
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
@@ -124,6 +125,10 @@ class Targeter():
         
 
         self.variable_names = select_vars
+        if metadata is not None and var_col is not None and label_col is not None:
+            self.set_metadata(meta=metadata,var_col=var_col, label_col=label_col) 
+        else:
+            self._metadata = None  
 
         # prepare data for optbinni
         X= data.filter(items =select_vars, axis = 1)
@@ -163,7 +168,7 @@ class Targeter():
     def get_table(self, name, show_digits = 2, add_totals = False):
         return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
 
-    def summary(self):
+    def summary(self,include_labels=False):
 
         out = self.profiles.summary()
         
@@ -203,7 +208,7 @@ class Targeter():
             if out["name"].values[i] in self.selection:
                 out.loc[i,"Selected"] = "x"
         out = out.sort_values(by = "Selected", ascending = False)
-        if self._metadata is not None:
+        if self._metadata is not None and include_labels == True:
                 out = pd.merge(out, self._metadata)
                 if self.target_type == "binary":
                     out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count','Selected']]
@@ -242,7 +247,7 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False):
+    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False, inlude_missing:str = "Never"):
         if filter == "auto":
             if self.filtered == False:
                 a2 = self.filter(n=filter_n,metric="quality_score").selection
