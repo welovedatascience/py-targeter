@@ -38,10 +38,21 @@
 
 
 ## code
-[!] Fix error in temmplate (hen running report)
+
+### Quarto template
+[!] Fix error in temmplate (hwen running report)
     KeyError: "['label'] not in index"
     When metadata is None (not provided)
+[ ] play with quarto parameters
+        format:
+        html:
+            fig-width: 3.5
+            fig-height: 3
+    in template headerto change values so that 2 plots show side by side having maximum width
+[ ] Also use parameters include_missings and  include_specials for base plot (not quadrant_plot)
 
+
+### python Code
 [x][20230705] - check i fthere are some Inf in explanatory variables
     -> to be tested
 [ ] Profiles reports on colored variables
@@ -57,7 +68,7 @@
     to
     include_missings:str = "any", include_specials:str = "never"
     Impact on all codes
-[ ] Also use parameters include_missings and  include_specials for base plot (not quadrant_plot)
+
 
 ## code: python package py-targeter
 [ ]   Document class+functions *in code* similar syntax used in optbinning (-> documentation auto-generation of classes)
