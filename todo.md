@@ -3,23 +3,29 @@
 ## internship scholar report
 [!] write report table of content, send to Eric for validation 
 [ ] Section introduction/ internship content 
-[ ] Environment set-up
+[ ] Describe Environment set-up
     [ ] some information about technical problem encountered and fix (Anaconda)
     [ ] learned: working with venv
-[ ] Section code iomplementation presentation
+[ ] Section code implementation presentation
 [ ] Section application on real data
     [ ] presentation of data
     [ ] first usage of routines: outcome
     [ ] iterative application: removal of highly correlated variables
     [ ] report interpretation, not necessary field per field but synthesis
 [ ] Section modeling
+    [ ]... <todo>
 
 
-## Statistical analysis
-[ ] select variables to be used, add target and some statistics in report
-[ ] prepare train/test (scikit learn)
+## statistical analysis:EDA
+[!] Profiles reports on colored variables
+    [ ] exclude conceptually correlated variables (satisfaction concept)
+    [ ] 3 reports (3 colored variables)
+
+## Statistical analysis: modeling
+[!] select variables to be used, add target and some statistics in report
+[!] prepare train/test (scikit learn)
 [ ] feature engineering pipeline (WOE recoding excluded, done later) - one hot encoding, outliers...
-[ ] Run targeter on targeter
+[ ] Run targeter on targeter on train set
 [ ] apply WOE recoding on training (-> new/other dataset)
 [ ] fit different models
     Cross:
@@ -43,7 +49,7 @@
 [!] Fix error in temmplate (hwen running report)
     KeyError: "['label'] not in index"
     When metadata is None (not provided)
-[ ] play with quarto parameters
+[!] play with quarto parameters
         format:
         html:
             fig-width: 3.5
@@ -55,9 +61,6 @@
 ### python Code
 [x][20230705] - check i fthere are some Inf in explanatory variables
     -> to be tested
-[ ] Profiles reports on colored variables
-    [ ] exclude conceptually correlated variables (satisfaction concept)
-    [ ] 3 reports (3 colored variables)
 [ ][20230705] - exclude catagorical variables with more than 30 values
     - to be testes
     - [ ] value of '30' to be put as parameter of main function Targeter (default: 30)
