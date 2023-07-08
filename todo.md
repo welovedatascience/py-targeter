@@ -68,7 +68,7 @@
     [ ] adapt quarto templates  default path + reference to targeter.py > we should *never* see a path 'c:/...' hardcoded anymore but reference/way to retrieve and use whereppackage is installed.
 [ ] "vignette" (jupyter notebook that inntroduces package functionalities with example)
 [ ] test installation & usage in windows subsystem for Linux (VScode should be able to view & connect to it when selecting python environment)
-
+[-] Add tests to package (even very simple one) and use gihtub action test python package Eric did configure.
 
 # Notes prises 
 
