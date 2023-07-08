@@ -73,7 +73,7 @@
 ## code: python package py-targeter
 [ ]   Document class+functions *in code* similar syntax used in optbinning (-> documentation auto-generation of classes)
 [ ] Wrap as a package   
-    [ ] requirements: pip freeze + manage at package level (google)
+    [X] requirements: pip freeze + manage at package level (google)
     [ ] way/how to include a data  file (adults.csv)
     [ ] README.md to complete
     [ ] adapt quarto templates  default path + reference to targeter.py > we should *never* see a path 'c:/...' hardcoded anymore but reference/way to retrieve and use whereppackage is installed.
