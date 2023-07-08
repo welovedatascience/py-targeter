@@ -59,7 +59,7 @@
     Impact on all codes
 [ ] Also use parameters include_missings and  include_specials for base plot (not quadrant_plot)
 
-## code: packaging
+## code: python package py-targeter
 [ ]   Document class+functions *in code* similar syntax used in optbinning (-> documentation auto-generation of classes)
 [ ] Wrap as a package   
     [ ] requirements: pip freeze + manage at package level (google)
@@ -67,8 +67,7 @@
     [ ] README.md to complete
     [ ] adapt quarto templates  default path + reference to targeter.py > we should *never* see a path 'c:/...' hardcoded anymore but reference/way to retrieve and use whereppackage is installed.
 [ ] "vignette" (jupyter notebook that inntroduces package functionalities with example)
-
-
+[ ] test installation & usage in windows subsystem for Linux (VScode should be able to view & connect to it when selecting python environment)
 
 
 # Notes prises 
