@@ -50,7 +50,7 @@ def check_inf(data:pd.DataFrame):
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missings:str = "any", include_specials:str = "never", **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missings:str = "any", include_specials:str = "never", reduce_variables:bool = True, **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
@@ -122,7 +122,8 @@ class Targeter():
         #     select_vars[~(select_vars == target)]
         # if (exclude_vars != None):
         #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))] 
-        execeed_modality_number_variables = data.columns[data.nunique() > 30].tolist()       
+        if reduce_variables == True:
+            execeed_modality_number_variables = data.columns[data.nunique() > 30].tolist()       
         if exclude_vars is not None:
             exclude_vars = list(set(exclude_vars + execeed_modality_number_variables))
             select_vars = list(set(select_vars).difference(exclude_vars))
