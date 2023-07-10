@@ -363,6 +363,8 @@ class Targeter():
         z = [self.mean for i in range(len(x))]
         pyplot.plot(x, z, color=color)
 
+        if self._metadata is not None and title is None:
+            title = self.label(name)[0]
         if title is None:
             title = name
         pyplot.title(title)
