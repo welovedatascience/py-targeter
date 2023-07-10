@@ -6,6 +6,8 @@ toc-location: body
 toc-title: Contents
 format:
   html:
+    fig-width: 3.5
+    fig-height: 3
     theme:
     - cosmo
     - targeter.scss
@@ -102,7 +104,8 @@ if tar.target_type == "binary":
   tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
 
   tab_sum.sort_values(by=['qs'], ascending = False)
-  if self._metadata is not None:
+  
+  if tar._metadata is not None:
     vars = ['name','label','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
   else:
     vars = ['name','label','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
@@ -218,12 +221,6 @@ tab_sum
 import matplotlib.pyplot as pyplot
 from adjustText import adjust_text
 
-
-
-def label(var, metadata = None):
-  if metadata is None:
-    return(var)
-metadata = None
 
 def format_df(df, index = True):
     """format the dataframe for display"""
