@@ -99,7 +99,8 @@ tar.target_stats
 
 ```{python}
 if tar.target_type == "binary":
-  tab_sum = tar.summary()
+  
+  tab_sum = tar.summary(include_labels=True)
 
   tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Event Rate':'MaxBin Rate','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
 
@@ -138,7 +139,7 @@ if tar.target_type == "binary":
   tab_sum['Max bin'] = tab_sum['Max bin'].map(lambda cell: '<div style="white-space: normal;">'+cell+"<div>")
 
 if tar.target_type == "continuous":
-  tab_sum = tar.summary()
+  tab_sum = tar.summary(include_labels=True)
 
   tab_sum.rename(columns={ 'quality_score':'qs','Max ER - Bin': 'Max bin','Max Mean':'MaxBin Mean','Max ER - Count':'MaxBin N', 'Selected':'Selected'}, inplace = True)
 
@@ -147,7 +148,7 @@ if tar.target_type == "continuous":
   if tar._metadata is not None:
       vars = ['name', 'label','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
   else:
-      vars = ['name','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
+      vars = ['name','n_bins', 'qs', 'Max bin', 'MaxBin Mean', 'MaxBin N', 'Selected']
 
 
 
@@ -227,6 +228,12 @@ import matplotlib.pyplot as pyplot
 from adjustText import adjust_text
 
 
+
+def label(var, metadata = None):
+  if metadata is None:
+    return(var)
+metadata = None
+
 def format_df(df, index = True):
     """format the dataframe for display"""
     return display(HTML(df.to_html(index=index)))
@@ -254,59 +261,45 @@ for ivar in list(tar.selection):
 
   display(Markdown("\n\n::: {<layout='[[45,-10,45],[100]]'}\n\n"))
 
-  if tar.include_missings == "never" and tar.include_specials == "never":
+  tar.plot(ivar)
+
+  if tar.include_missings == "Never" and tar.include_specials == "Never":
         tar.quadrant_plot(ivar, add_missing=False, add_specials=False)
-        tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missings == "always" and tar.include_specials == "never":
+  elif tar.include_missings == "Always" and tar.include_specials == "Never":
         tar.quadrant_plot(ivar, add_missing=True, add_specials=False)
-        tar.plot(ivar, add_missing=True, add_special=False)
-  elif tar.include_missings == "never" and tar.include_specials == "always":
-        tar.quadrant_plot(ivar, add_missing=False, add_specials=True)
-        tar.plot(ivar, add_missing=False, add_special=True)
-  elif tar.include_missings == "always" and tar.include_specials == "always":
+  elif tar.include_missings == "Never" and tar.include_specials == "Always":
+        tar.quadrant_plot(ivar, add_missing=False, add_specials=False)
+  elif tar.include_missings == "Always" and tar.include_specials == "Always":
         tar.quadrant_plot(ivar, add_missing=True, add_specials=True)
-        tar.plot(ivar, add_missing=True, add_special=True)
-  elif tar.include_missings == "any" and tar.include_specials == "always":
+  elif tar.include_missings == "Any" and tar.include_specials == "Always":
       if (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Missing"]["Count"] > 0).any():
           tar.quadrant_plot(ivar, add_missing=True, add_specials=True)
-          tar.plot(ivar, add_missing=True, add_special=True)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_specials=True)
-            tar.plot(ivar, add_missing=False, add_special=True)
-  elif tar.include_missings == "any" and tar.include_specials == "never":
+  elif tar.include_missings == "Any" and tar.include_specials == "Never":
       if (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Missing"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=True, add_specials=False)
-            tar.plot(ivar, add_missing=True, add_special=False)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_specials=False)
-            tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missings == "always" and tar.include_specials == "any":
+  elif tar.include_missings == "Always" and tar.include_specials == "Any":
       if (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Special"]["Count"] > 0).any():
           tar.quadrant_plot(ivar, add_missing=True, add_specials=True)
-          tar.plot(ivar, add_missing=True, add_special=True)
       else:
           tar.quadrant_plot(ivar, add_missing=True, add_specials=False)
-          tar.plot(ivar, add_missing=True, add_special=False)
-  elif tar.include_missings == "never" and tar.include_specials == "any":
+  elif tar.include_missings == "Never" and tar.include_specials == "Any":
       if (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Special"]["Count"] > 0).any():
           tar.quadrant_plot(ivar, add_missing=False, add_specials=True)
-          tar.plot(ivar, add_missing=False, add_special=True)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_specials=False)
-            tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missings == "any" and tar.include_specials == "any":
+  elif tar.include_missings == "Any" and tar.include_specials == "Any":
       if (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Special"]["Count"] > 0).any() and (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Missing"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=True, add_specials=True)
-            tar.plot(ivar, add_missing=True, add_special=True)
       elif (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Special"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=False, add_specials=True)
-            tar.plot(ivar, add_missing=True, add_special=True)
       elif (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Missing"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=True, add_specials=False)
-            tar.plot(ivar, add_missing=True, add_special=False)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_specials=False)
-            tar.plot(ivar, add_missing=False, add_special=False)
 
   
   if tar.target_type == "binary":

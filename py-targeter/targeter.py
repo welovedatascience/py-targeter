@@ -50,7 +50,7 @@ def check_inf(data:pd.DataFrame):
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col:str = None, label_col:str = None,include_missings:str = "any", include_specials:str = "never", reduce_variables:bool = True, modality_limit:int = 30, **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missings:str = "Any", include_specials:str = "Never", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
@@ -122,8 +122,7 @@ class Targeter():
         #     select_vars[~(select_vars == target)]
         # if (exclude_vars != None):
         #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))] 
-        if reduce_variables == True:
-            execeed_modality_number_variables = data.columns[data.nunique() > modality_limit].tolist()       
+        execeed_modality_number_variables = data.columns[data.nunique() > 30].tolist()       
         if exclude_vars is not None:
             exclude_vars = list(set(exclude_vars + execeed_modality_number_variables))
             select_vars = list(set(select_vars).difference(exclude_vars))
@@ -235,7 +234,7 @@ class Targeter():
     def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = False):
         #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
         if self.target_type == "binary":
-            self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels)
+            self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
         if self.target_type == "continuous":
             self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
 
@@ -363,8 +362,6 @@ class Targeter():
         z = [self.mean for i in range(len(x))]
         pyplot.plot(x, z, color=color)
 
-        if self._metadata is not None and title is None:
-            title = self.label(name)[0]
         if title is None:
             title = name
         pyplot.title(title)

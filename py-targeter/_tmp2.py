@@ -23,17 +23,18 @@ dtypes.update({col2: 'int32' for col2 in df2.columns if df2[col2].dtype == 'int6
 dtypes.update({col3 : 'object' for col3 in df2.columns if df2[col3].dtype == 'object'})
 
 
-#df = pd.read_csv(r"C:\Users\natha\OneDrive\Documents\WeLoveDataScience\df-wlds-equete2014.csv", dtype = dtypes)
-df = pd.read_csv("C:/Users/natha/OneDrive/Documents/WeLoveDataScience/adult.csv")
+df = pd.read_csv(r"C:\Users\natha\OneDrive\Documents\WeLoveDataScience\df-wlds-equete2014.csv", dtype = dtypes)
+#df = pd.read_csv("C:/Users/natha/OneDrive/Documents/WeLoveDataScience/adult.csv")
+#df = df[df[target].notnull()]
+df = df.drop(df[df['R_Client_Taux_de_plainte'] == np.inf].index)
+df = df.drop(df[df['R_Client_pct_enquete_repondu'] == np.inf].index)
 df = df[df[target].notnull()]
-#df = df.drop(df[df['R_Client_Taux_de_plainte'] == np.inf].index)
-#df = df.drop(df[df['R_Client_pct_enquete_repondu'] == np.inf].index)
+meta = pd.read_excel(r"C:\Users\natha\OneDrive\Documents\WeLoveDataScience\meta data8.xlsx", sheet_name="Feuil1")
 
 #tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),select_vars=['B_NOTANSWER_O363'])
-#tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns))
-
-#tar.set_metadata(meta=meta,var_col="Nom colonne",label_col="newname")
-tar = Targeter(target="ABOVE50K",data=df)
+#tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),var_col="Nom colonne", label_col="newname",metadata=meta)
+tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns))
+#tar = Targeter(target="ABOVE50K",data=df)
 
 
 out_directory='.'
