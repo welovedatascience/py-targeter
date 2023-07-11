@@ -108,7 +108,7 @@ if tar.target_type == "binary":
   if tar._metadata is not None:
     vars = ['name','label','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
   else:
-    vars = ['name','label','n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
+    vars = ['name', 'n_bins','iv','qs','Max bin','MaxBin Rate','MaxBin N', 'Selected']
 
   tab_sum = tab_sum[vars]
 
@@ -144,7 +144,12 @@ if tar.target_type == "continuous":
 
   tab_sum.sort_values(by=['qs'], ascending = False)
 
-  vars = ['name','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
+  if tar._metadata is not None:
+      vars = ['name', 'label','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
+  else:
+      vars = ['name','n_bins','qs','Max bin','MaxBin Mean','MaxBin N', 'Selected']
+
+
 
   tab_sum = tab_sum[vars]
 
@@ -295,7 +300,7 @@ for ivar in list(tar.selection):
             tar.plot(ivar, add_missing=True, add_special=True)
       elif (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Special"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=False, add_specials=True)
-            tar.plot(ivar, add_missing=False, add_special=True)
+            tar.plot(ivar, add_missing=True, add_special=True)
       elif (tar.get_table(ivar)[tar.get_table(ivar)["Bin"] == "Missing"]["Count"] > 0).any():
             tar.quadrant_plot(ivar, add_missing=True, add_specials=False)
             tar.plot(ivar, add_missing=True, add_special=False)
