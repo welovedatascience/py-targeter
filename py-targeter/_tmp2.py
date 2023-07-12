@@ -30,12 +30,12 @@ df = df.drop(df[df['R_Client_Taux_de_plainte'] == np.inf].index)
 df = df.drop(df[df['R_Client_pct_enquete_repondu'] == np.inf].index)
 df = df[df[target].notnull()]
 meta = pd.read_excel(r"C:\Users\natha\OneDrive\Documents\WeLoveDataScience\meta data8.xlsx", sheet_name="Feuil1")
+df3 = pd.read_csv("C:/Users/natha/OneDrive/Documents/WeLoveDataScience/adult.csv")
 
 #tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),select_vars=['B_NOTANSWER_O363'])
 #tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),var_col="Nom colonne", label_col="newname",metadata=meta)
-tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns))
-#tar = Targeter(target="ABOVE50K",data=df)
-
+#tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns))
+tar = Targeter(target=target,data=df,categorical_variables=list(df.select_dtypes(include=["object"]).columns),var_col="Nom colonne", label_col="newname",metadata=meta, exclude_vars= ['O_374','N_Cote_actuelle','O_366','O_373','N_Confort','O_368','B_532','O_414','O_363','O_679','O_362','O_523','O_415','O_371','N_Cote_Actuelle','O_370','O_372','N_ConfortGap','O_367','O_524'])
 
 out_directory='.'
 out_file=None
@@ -74,6 +74,8 @@ cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"
 
 import papermill
 p = subprocess.Popen(cmd, cwd=tmpdir, shell=True)
+
+
 p.wait()    
 
 
@@ -92,7 +94,7 @@ shutil.copy(report_file, out_file)
 
 
 
-
+print(tar.summary()[tar.summary()["Selected"] == "x"].to_latex(index=False,formatters={"name": str.upper},float_format="{:.1f}".format))
 
 
 

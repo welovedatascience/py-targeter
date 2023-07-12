@@ -257,76 +257,64 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template = None, out_format='html', source_code_dir =  'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter', filter = "auto", filter_count_min = 500, filter_n = 20, force_var:str = None, delete_tmp = False):
+    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False):
         if filter == "auto":
             if self.filtered == False:
-                a2 = self.filter(n=filter_n,metric="quality_score").selection
+                a2 = self.filter(n=filter_n, metric="quality_score").selection
                 self.selection = list(set(a2))
-                if self.target_type == "binary":
-                    a4 = self.filter(n=filter_n,metric="js").selection 
-                    a1 = self.filter(n=filter_n,metric="iv").selection
-                    a3 = self.filter(n=filter_n,metric="Max Event Rate", count_min=filter_count_min).selection
-                    a5 = self.filter(n=20,metric="gini").selection
-                    self.selection = list(set(list(self.selection) + list(a5) + list(a3) + list(a1) + list(a4)))
-                if self.target_type == "continuous":
-                    a3 = self.filter(n=filter_n,metric="Max Mean", count_min=filter_count_min).selection
-                    self.selection = list(set(list(self.selection)+ list(a3)))
-                self.filtered = True
+            
+            if self.target_type == "binary":
+                a4 = self.filter(n=filter_n, metric="js").selection
+                a1 = self.filter(n=filter_n, metric="iv").selection
+                a3 = self.filter(n=filter_n, metric="Max Event Rate", count_min=filter_count_min).selection
+                a5 = self.filter(n=20, metric="gini").selection
+                self.selection = list(set(list(self.selection) + list(a5) + list(a3) + list(a1) + list(a4)))
+            
+            if self.target_type == "continuous":
+                a3 = self.filter(n=filter_n, metric="Max Mean", count_min=filter_count_min).selection
+                self.selection = list(set(list(self.selection) + list(a3)))
+            
+            self.filtered = True
+    
         if force_var is not None:
             self.selection = list(set(list(self.selection) + list(force_var)))
         else:
             self.selection = list(set(list(self.selection)))
-        # create temporary folder
-        tmpdir = mkdtemp(prefix = 'targeter_')
-
-
-        # copy template in it
-        if (template is None):
-        # default template:
+    
+    # create temporary folder
+        tmpdir = mkdtemp(prefix='targeter_')
+    
+    # copy template to the temporary folder
+        if template is None:
             template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
-        shutil.copy(template, to_template)    
-
+        shutil.copy(template, to_template)
+    
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
-        self.save( tar_pickle_path)
+        self.save(tar_pickle_path)
  
-        ## <!> temporary: need package and installed package to work...
-
         tofile = os.path.join(tmpdir, 'targeter.py')
-        shutil.copy(os.path.join(source_code_dir,'py-targeter', 'targeter.py'), tofile )    
-
-        
+        shutil.copy(os.path.join(source_code_dir, 'py-targeter', 'targeter.py'), tofile)
+    
         os.environ['TARGETER_TMPDIR'] = tmpdir
-        #ff
-
-
-        # cmd =  'quarto render targeter-report.qmd --output generated_report  -P tmpdir:"' + tmpdir + '" --to ' + out_format
-        cmd =  'quarto render targeter-report.qmd --output generated_report  --to ' + out_format
-
-        # cmd =  'quarto render targeter-report.qmd --output generated_report'  + ' -P tmpdir:"'+ tmpdir + '"' + ' --to ' + out_format
-        # cmd =  'quarto render targeter-report.qmd --output generated_report --to ' + out_format
-
-
-
-
-
+    
+        cmd = 'quarto render targeter-report.qmd --output generated_report --to ' + out_format
+    
         p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
-        p.wait() 
-        
-
+        p.wait()
+    
         if out_file is None:
             out_file = 'report'
         out_file = os.path.join(out_directory, out_file+'.'+out_format)
-
-        report_file = os.path.join(tmpdir, 'generated_report').replace(os.sep,"/")
+    
+        report_file = os.path.join(tmpdir, 'generated_report').replace(os.sep, "/")
         shutil.copy(report_file, out_file)
+    
+        if delete_tmp:
+            os.remove(tmpdir, 'targeter.py')
+    
+        return out_file
 
-        if delete_tmp == True:
-                os.remove(tmpdir, 'targeter.py')
-        
-
-
-        return(out_file)
 
     def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, add_special=False, show=False):
         #Choose whether to show missing values or not 
@@ -362,8 +350,10 @@ class Targeter():
         z = [self.mean for i in range(len(x))]
         pyplot.plot(x, z, color=color)
 
-        if title is None:
+        if title is None and self._metadata is None:
             title = name
+        if title is None and self._metadata is not None:
+            title = self.label(name)[0]
         pyplot.title(title)
 
         pyplot.ylabel(ylab)
@@ -392,10 +382,10 @@ class Targeter():
             if not(set(names_list) <= set(self.variable_names)):
                 raise Exception("Names does not exist in data")
         a = pd.DataFrame(names_list, columns=["name"])
-        final = pd.merge(self._metadata, a)
+        final = pd.merge(a, self._metadata, on = 'name', how='left')
         labels_descriptions = []
         for i in range(len(final["name"].values)):
-            if str(final["label"].values[i]) == 'nan':
+            if str(final["label"].values[i]) == str(np.nan):
                 labels_descriptions.append(str(final["name"].values[i]))
             else:
                 labels_descriptions.append(str(final["label"].values[i]))
