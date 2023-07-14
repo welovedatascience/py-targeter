@@ -393,13 +393,19 @@ class Targeter():
             if not(set(names_list) <= set(self.variable_names)):
                 raise Exception("Names does not exist in data")
         a = pd.DataFrame(names_list, columns=["name"])
-        final = pd.merge(a, self._metadata, on = 'name', how='left')
-        labels_descriptions = []
-        for i in range(len(final["name"].values)):
-            if str(final["label"].values[i]) == str(np.nan):
-                labels_descriptions.append(str(final["name"].values[i]))
-            else:
-                labels_descriptions.append(str(final["label"].values[i]))
+        if self._metadata is None:
+            label_descriptions = []
+            for i in range(names):
+                label_descriptions.append(names[i])
+                return label_descriptions
+        else:
+            final = pd.merge(a, self._metadata, on = 'name', how='left')
+            labels_descriptions = []
+            for i in range(len(final["name"].values)):
+                if str(final["label"].values[i]) == str(np.nan):
+                    labels_descriptions.append(str(final["name"].values[i]))
+                else:
+                    labels_descriptions.append(str(final["label"].values[i]))
         
         return(labels_descriptions)
     
