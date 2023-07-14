@@ -269,16 +269,16 @@ for ivar in list(tar.selection):
   if tar.include_missing == "never" and tar.include_special == "never":
         tar.quadrant_plot(ivar, add_missing=False, add_special=False)
         tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Always" and tar.include_special == "never":
+  elif tar.include_missing == "always" and tar.include_special == "never":
         tar.quadrant_plot(ivar, add_missing=True, add_special=False)
         tar.plot(ivar, add_missing=True, add_special=False)
-  elif tar.include_missing == "never" and tar.include_special == "Always":
+  elif tar.include_missing == "never" and tar.include_special == "always":
         tar.quadrant_plot(ivar, add_missing=False, add_special=False)
         tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Always" and tar.include_special == "Always":
+  elif tar.include_missing == "always" and tar.include_special == "always":
         tar.quadrant_plot(ivar, add_missing=True, add_special=True)
         tar.plot(ivar, add_missing=True, add_special=True)
-  elif tar.include_missing == "any" and tar.include_special == "Always":
+  elif tar.include_missing == "any" and tar.include_special == "always":
       if  has_nonzero_count_with_missing_bin:
           tar.quadrant_plot(ivar, add_missing=True, add_special=True)
           tar.plot(ivar, add_missing=True, add_special=True)
@@ -292,7 +292,7 @@ for ivar in list(tar.selection):
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_special=False)
             tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Always" and tar.include_special == "any":
+  elif tar.include_missing == "always" and tar.include_special == "any":
       if  has_nonzero_count_with_special_bin:
           tar.quadrant_plot(ivar, add_missing=True, add_special=True)
           tar.plot(ivar, add_missing=True, add_special=True)
