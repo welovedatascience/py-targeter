@@ -46,6 +46,12 @@ def check_inf(data:pd.DataFrame):
         if np.inf in data[column].values:
             return True
     return False
+def apply_nan(value):
+    if str(value) == "nan":
+        return None
+    else:
+        return value
+
 
 
 
@@ -66,6 +72,7 @@ class Targeter():
         for var in data.columns:
             if autoguess(data,var) == "binary_num":
                 data[var] = data[var].apply(str)
+            data[var] = data[var].apply(apply_nan)
         self.target = target
         counts = data[target].value_counts()
         proportions = counts / len(data)
@@ -227,14 +234,16 @@ class Targeter():
                     out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'iv', 'js', 'gini', 'quality_score', 'Max ER - Bin', 'Max Event Rate', 'Max ER - Count','Selected']]
                 if self.target_type == "continuous":
                     out = out[['name', 'label', 'dtype', 'status', 'selected', 'n_bins', 'quality_score', 'Max ER - Bin', 'Max Mean', 'Max ER - Count','Selected']]
-        
+        out_selected = out[out["Selected"] == "x"].sort_values(by=["quality_score"], ascending = False)
+        out_not_selected = out[out["Selected"] != "x"].sort_values(by=["quality_score"], ascending = False)
+        out = pd.concat([out_selected, out_not_selected])
 
         
         return(out)
 
 #    def transform(self, x, y):
 #        self.profiles.fit_transform(data, data.[target].values)
-    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = False):
+    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = True):
         #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
         if self.target_type == "binary":
             self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
