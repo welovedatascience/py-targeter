@@ -63,6 +63,9 @@ class Targeter():
         finally:
             del frame
         self.data = dfname
+        for var in data.columns:
+            if autoguess(data,var) == "binary_num":
+                data[var] = data[var].apply(str)
         self.target = target
         counts = data[target].value_counts()
         proportions = counts / len(data)
@@ -389,9 +392,10 @@ class Targeter():
                 labels_descriptions.append(str(final["name"].values[i]))
             else:
                 labels_descriptions.append(str(final["label"].values[i]))
+        
         return(labels_descriptions)
     
-    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
+    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = True):
         final = self.summary()
         continuous_metrics = ["iv", "js", "gini", "quality_score", "Max Mean"]
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
