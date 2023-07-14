@@ -56,7 +56,7 @@ def apply_nan(value):
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missing:str = "Any", include_special:str = "Never", **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missing:str = "any", include_special:str = "never", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")

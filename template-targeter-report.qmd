@@ -266,47 +266,47 @@ for ivar in list(tar.selection):
   is_count_greater_than_zero = tar_table["Count"].gt(0)
   has_nonzero_count_with_missing_bin = np.logical_and(is_bin_missing, is_count_greater_than_zero).any()
   has_nonzero_count_with_special_bin = np.logical_and(is_bin_special, is_count_greater_than_zero).any()
-  if tar.include_missing == "Never" and tar.include_special == "Never":
+  if tar.include_missing == "never" and tar.include_special == "never":
         tar.quadrant_plot(ivar, add_missing=False, add_special=False)
         tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Always" and tar.include_special == "Never":
+  elif tar.include_missing == "Always" and tar.include_special == "never":
         tar.quadrant_plot(ivar, add_missing=True, add_special=False)
         tar.plot(ivar, add_missing=True, add_special=False)
-  elif tar.include_missing == "Never" and tar.include_special == "Always":
+  elif tar.include_missing == "never" and tar.include_special == "Always":
         tar.quadrant_plot(ivar, add_missing=False, add_special=False)
         tar.plot(ivar, add_missing=False, add_special=False)
   elif tar.include_missing == "Always" and tar.include_special == "Always":
         tar.quadrant_plot(ivar, add_missing=True, add_special=True)
         tar.plot(ivar, add_missing=True, add_special=True)
-  elif tar.include_missing == "Any" and tar.include_special == "Always":
+  elif tar.include_missing == "any" and tar.include_special == "Always":
       if  has_nonzero_count_with_missing_bin:
           tar.quadrant_plot(ivar, add_missing=True, add_special=True)
           tar.plot(ivar, add_missing=True, add_special=True)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_special=True)
             tar.plot(ivar, add_missing=False, add_special=True)
-  elif tar.include_missing == "Any" and tar.include_special == "Never":
+  elif tar.include_missing == "any" and tar.include_special == "never":
       if  has_nonzero_count_with_missing_bin:
             tar.quadrant_plot(ivar, add_missing=True, add_special=False)
             tar.plot(ivar, add_missing=True, add_special=False)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_special=False)
             tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Always" and tar.include_special == "Any":
+  elif tar.include_missing == "Always" and tar.include_special == "any":
       if  has_nonzero_count_with_special_bin:
           tar.quadrant_plot(ivar, add_missing=True, add_special=True)
           tar.plot(ivar, add_missing=True, add_special=True)
       else:
           tar.quadrant_plot(ivar, add_missing=True, add_special=False)
           tar.plot(ivar, add_missing=True, add_special=False)
-  elif tar.include_missing == "Never" and tar.include_special == "Any":
+  elif tar.include_missing == "never" and tar.include_special == "any":
       if has_nonzero_count_with_special_bin:
           tar.quadrant_plot(ivar, add_missing=False, add_special=True)
           tar.plot(ivar, add_missing=False, add_special=True)
       else:
             tar.quadrant_plot(ivar, add_missing=False, add_special=False)
             tar.plot(ivar, add_missing=False, add_special=False)
-  elif tar.include_missing == "Any" and tar.include_special == "Any":
+  elif tar.include_missing == "any" and tar.include_special == "any":
       if  has_nonzero_count_with_missing_bin and  has_nonzero_count_with_special_bin:
             tar.quadrant_plot(ivar, add_missing=True, add_special=True)
             tar.plot(ivar, add_missing=True, add_special=True)
