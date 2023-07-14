@@ -194,8 +194,7 @@ if tar.target_type == "continuous":
 ```{python}
 
 # Will only appear in HTML.
-
-show(tab_sum, paging = False, info = False, style = "width:100%;margin:auto")
+show(tab_sum[0:], paging=True, info=False, style="width:100%;margin:auto")
 
 ```
 
