@@ -263,19 +263,18 @@ class Targeter():
     def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False):
         if filter == "auto":
             if self.filtered == False:
-                a2 = self.filter(n=filter_n, metric="quality_score").selection
-                self.selection = list(set(a2))
+                a1 = self.filter(n=filter_n, metric="quality_score").selection
             
-            if self.target_type == "binary":
-                a4 = self.filter(n=filter_n, metric="js").selection
-                a1 = self.filter(n=filter_n, metric="iv").selection
-                a3 = self.filter(n=filter_n, metric="Max Event Rate", count_min=filter_count_min).selection
-                a5 = self.filter(n=20, metric="gini").selection
-                self.selection = list(set(list(self.selection) + list(a5) + list(a3) + list(a1) + list(a4)))
+                if self.target_type == "binary":
+                    a2 = self.filter(n=filter_n, metric="js").selection
+                    a3 = self.filter(n=filter_n, metric="iv").selection
+                    a4 = self.filter(n=filter_n, metric="Max Event Rate", count_min=filter_count_min).selection
+                    a5 = self.filter(n=20, metric="gini").selection
+                    self.selection = list(set(a1 + a2 + a3 + a4 + a5))
             
-            if self.target_type == "continuous":
-                a3 = self.filter(n=filter_n, metric="Max Mean", count_min=filter_count_min).selection
-                self.selection = list(set(list(self.selection) + list(a3)))
+                if self.target_type == "continuous":
+                    a2 = self.filter(n=filter_n, metric="Max Mean", count_min=filter_count_min).selection
+                    self.selection = list(set(a1 + a2))
             
             self.filtered = True
     
@@ -395,9 +394,9 @@ class Targeter():
         
         return(labels_descriptions)
     
-    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = True):
+    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
         final = self.summary()
-        continuous_metrics = ["iv", "js", "gini", "quality_score", "Max Mean"]
+        continuous_metrics = ["quality_score", "Max Mean"]
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
         if self.target_type == "binary" and metric not in binary_metrics:
                 raise Exception("{} does not match available metrics".format(metric))
@@ -413,7 +412,7 @@ class Targeter():
         else:
             final = final.sort_values(by = metric, ascending = False)
         if n is not None:
-            final = final.iloc[1:n,:]
+            final = final.iloc[0:n,:]
         variables_selected = list(final["name"].values)
         if force_var is not None:
             variables_selected = variables_selected + force_var
