@@ -127,12 +127,13 @@ class Targeter():
 #            if type(format_target) == str:,
         # prepare list of variables
         # prepare  data: X and y
-        if select_vars == None:
+        if select_vars is None:
             select_vars = data.columns.values
         #     select_vars[~(select_vars == target)]
         # if (exclude_vars != None):
         #     select_vars = select_vars[(~np.isin(select_vars,exclude_vars))] 
-        execeed_modality_number_variables = data.columns[data.nunique() > 30].tolist()       
+        # Replace the line with this code
+        execeed_modality_number_variables = data.select_dtypes(include=["object"]).columns[data.select_dtypes(include=["object"]).nunique() > 30].tolist()     
         if exclude_vars is not None:
             exclude_vars = list(set(exclude_vars + execeed_modality_number_variables))
             select_vars = list(set(select_vars).difference(exclude_vars))
@@ -159,7 +160,7 @@ class Targeter():
 
 
         #X = df.drop(columns=target).values
-        all_optb = BinningProcess(variable_names=  select_vars,**optbinning_kwargs)  # ...definition of what we want to do as computation
+        all_optb = BinningProcess(variable_names=select_vars)  # ...definition of what we want to do as computation
         all_optb = all_optb.fit(X, y) # effectively perform computations
 
 
