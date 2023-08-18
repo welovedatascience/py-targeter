@@ -12,6 +12,7 @@ from matplotlib import pyplot
 from adjustText import adjust_text
 
 
+
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
         column = data[var] #<TODO> add filter on rows
         if (remove_missing):
@@ -56,13 +57,15 @@ def apply_nan(value):
 
 
 class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missing:str = "any", include_special:str = "never", **optbinning_kwargs):
+    
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
         frame = inspect.currentframe()
         dfname=''
         try:
+            
             for var, val in frame.f_back.f_locals.items():
                 if val is data:
                     dfname = var
@@ -177,16 +180,16 @@ class Targeter():
         else:
             self.selection = select_vars
         self.filtered = False   
-        self.include_missing = include_missing
-        self.include_special = include_special
+        
 
 
 
     # def get_binning_table(self, name):
     #    self.profiles.get_binned_variable(name).binning_table
+    
 
 
-    def get_table(self, name, show_digits = 2, add_totals = False):
+    def get_table(self, name:str, show_digits:int = 2, add_totals:bool = False):
         return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
 
     def summary(self,include_labels=False):
@@ -218,6 +221,7 @@ class Targeter():
                                    'Max Mean':[max_mean],
                                    'Max ER - Count':[max_count]})
                 tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
+                
 
 
         
@@ -238,7 +242,9 @@ class Targeter():
         out_selected = out[out["Selected"] == "x"].sort_values(by=["quality_score"], ascending = False)
         out_not_selected = out[out["Selected"] != "x"].sort_values(by=["quality_score"], ascending = False)
         out = pd.concat([out_selected, out_not_selected])
-
+        if self.target_type == "continuous":
+            for i in range(len(out["name"].values)):
+                out.loc[i,"iv"] = self.get_optbinning_object(out.loc[i,"name"]).binning_table.iv
         
         return(out)
 
@@ -249,7 +255,7 @@ class Targeter():
         if self.target_type == "binary":
             self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
         if self.target_type == "continuous":
-            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels)
 
         
     def get_optbinning_object(self,name:str):
@@ -270,7 +276,9 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False):
+    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False,include_missing:str = "any", include_special:str = "never"):
+        self.include_missing = include_missing
+        self.include_special = include_special
         if filter == "auto":
             if self.filtered == False:
                 a1 = self.filter(n=filter_n, metric="quality_score").selection
