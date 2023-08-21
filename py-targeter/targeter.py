@@ -342,7 +342,7 @@ class Targeter():
         if add_special == False:
             df = df[~df["Bin"].isin(['Special'])]
         if add_missing == False:
-            df = df[~df["Bin"].isin(['Index'])]
+            df = df[~df["Bin"].isin(['Missing'])]
         labels = df["Bin"].values
         
         x = df["Count"].values
@@ -420,7 +420,7 @@ class Targeter():
     
     def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
         final = self.summary()
-        continuous_metrics = ["quality_score", "Max Mean"]
+        continuous_metrics = ["quality_score", "Max Mean", 'iv']
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
         if self.target_type == "binary" and metric not in binary_metrics:
                 raise Exception("{} does not match available metrics".format(metric))
