@@ -101,6 +101,35 @@ def apply_nan(value):
 
 
 class Targeter():
+    '''
+    A class for variable binning and analysis.
+
+    Attributes
+    ----------
+    data : str
+        Name of the dataframe used.
+    target : str
+        Name of the target variable.
+    target_reference_level : str or int 
+        The reference level of the target variable for binary classification.
+    target_type : str 
+        The type of the target variable: "binary" or "continuous".
+    target_stats : pandas.DataFrame 
+        A dataframe indicating counts, proportions, and reference level if target type is binary.
+    mean : float 
+        Mean of the target variable.
+    variable_names : list of str
+        List containing the names of variables used for analysis.
+    _metadata : pandas.DataFrame
+        A dataframe containing user-defined metadata.
+    profiles : optbinning.BinningProcess
+        BinningProcess object fitted to data and target.
+    filtered : bool
+        Indicates if the Targeter object is filtered.
+    selection : list of str
+        List containing the names of selected variables after filtering.
+
+    '''
     
     def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
@@ -287,7 +316,7 @@ class Targeter():
         return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
 
     def summary(self,include_labels=False):
-        """
+        '''
     Generate a summary of the binning process and statistics for the variables.
 
     Parameters
@@ -300,8 +329,8 @@ class Targeter():
     summary_df : pandas.DataFrame
         A summary DataFrame containing information and statistics for each variable.
 
-    """
-    
+    '''
+
 
         out = self.profiles.summary()
         
@@ -396,7 +425,7 @@ class Targeter():
 #
 
     def save(self, path):
-        """
+        '''
     Save the binning process to a pickle file.
 
     Parameters
@@ -409,7 +438,7 @@ class Targeter():
     TypeError
         If the provided `path` is not a string.
 
-    """
+    '''
         if not isinstance(path, str):
             raise TypeError("path must be a string.")
 
@@ -569,10 +598,8 @@ class Targeter():
         z = [self.mean for i in range(len(x))]
         pyplot.plot(x, z, color=color)
 
-        if title is None and self._metadata is None:
+        if title is None:
             title = name
-        if title is None and self._metadata is not None:
-            title = self.label(name)[0]
         pyplot.title(title)
 
         pyplot.ylabel(ylab)
