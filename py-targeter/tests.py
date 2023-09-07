@@ -14,3 +14,4 @@ plt.subplot(2,1,1)
 tar2.quadrant_plot("WORKCLASS")
 plt.subplot(2,1,1)
 plt.show()
+# 
