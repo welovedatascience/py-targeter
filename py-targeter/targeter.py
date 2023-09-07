@@ -12,37 +12,7 @@ from matplotlib import pyplot
 from adjustText import adjust_text
 
 
-
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
-        '''
-    Automatically guesses the data type of a variable based on its values.
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        The input dataset containing the variable.
-    var : str
-        The name of the variable for which the data type needs to be guessed.
-    remove_missing : bool, optional
-        Whether to remove missing values before guessing. Default is True.
-    num_as_categorical_nval : int, optional
-        Number of unique values to consider a numeric variable as categorical. Default is 5.
-    autoguess_nrows : int, optional
-        Number of rows to use for autoguessing the variable types. Default is 1000.
-
-    Returns
-    -------
-    data_type : str
-        The guessed data type of the variable. Possible values include:
-        - "binary_bool": Binary boolean variable.
-        - "binary_str": Binary categorical variable with string values.
-        - "categorical_str": Categorical variable with string values.
-        - "binary_num": Binary numeric variable.
-        - "categorical_num": Categorical numeric variable.
-        - "continuous": Continuous numeric variable.
-        - "unknown": Unknown data type.
-
-    '''
         column = data[var] #<TODO> add filter on rows
         if (remove_missing):
             column = column[column.notnull()]
@@ -71,26 +41,11 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
 #autoguess(df, " ABOVE50K")
 
 def check_inf(data:pd.DataFrame):
-    '''
-    Checks if there are any infinite values (np.inf) in the numeric columns of a DataFrame.
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        The input DataFrame to be checked for infinite values.
-
-    Returns
-    -------
-    has_infinite : bool
-        True if any infinite values are found, False otherwise.
-
-    '''
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
         if np.inf in data[column].values:
             return True
     return False
-    
 def apply_nan(value):
     if str(value) == "nan":
         return None
@@ -101,81 +56,13 @@ def apply_nan(value):
 
 
 class Targeter():
-    '''
-    A class for variable binning and analysis.
-
-    Attributes
-    ----------
-    data : str
-        Name of the dataframe used.
-    target : str
-        Name of the target variable.
-    target_reference_level : str or int 
-        The reference level of the target variable for binary classification.
-    target_type : str 
-        The type of the target variable: "binary" or "continuous".
-    target_stats : pandas.DataFrame 
-        A dataframe indicating counts, proportions, and reference level if target type is binary.
-    mean : float 
-        Mean of the target variable.
-    variable_names : list of str
-        List containing the names of variables used for analysis.
-    _metadata : pandas.DataFrame
-        A dataframe containing user-defined metadata.
-    profiles : optbinning.BinningProcess
-        BinningProcess object fitted to data and target.
-    filtered : bool
-        Indicates if the Targeter object is filtered.
-    selection : list of str
-        List containing the names of selected variables after filtering.
-
-    '''
-    
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname", **optbinning_kwargs):
+    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missing:str = "any", include_special:str = "never", **optbinning_kwargs):
         # retrieve dataframe name from call and store it in ouput 'data' slot
-        '''
-    Initializes a Targeter object for variable binning and analysis.
-
-    Parameters
-    ----------
-    data : pandas.DataFrame
-        The input dataset containing the variables.
-    target : str
-        The name of the target variable for analysis.
-    select_vars : list of str, optional
-        A list of variable names to be considered for analysis. If None, all columns will be used.
-    exclude_vars : list of str, optional
-        A list of variable names to be excluded from analysis.
-    target_type : str, optional
-        The type of the target variable: "binary" or "continuous". If "auto", the type will be guessed.
-    categorical_variables : str or list of str, optional
-        The variable(s) that should be treated as categorical. If "auto", the variables will be guessed.
-    description_data : dict, optional
-        A dictionary containing descriptions for the data.
-    target_reference_level : str or int, optional
-        The reference level of the target variable for binary classification.
-    description_target : str, optional
-        A description for the target variable.
-    num_as_categorical_nval : int, optional
-        Number of unique values to consider a numeric variable as categorical.
-    autoguess_nrows : int, optional
-        Number of rows to use for autoguessing the variable types.
-    metadata : pandas.DataFrame, optional
-        A DataFrame containing metadata for variable names and labels.
-    var_col : str, optional
-        The name of the column in the metadata DataFrame that contains the variable names.
-    label_col : str, optional
-        The name of the column in the metadata DataFrame that contains the labels for the variables.
-    **optbinning_kwargs : dict, optional
-        Additional arguments to be passed to the optbinning.BinningProcess constructor.
-
-    '''
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
         frame = inspect.currentframe()
         dfname=''
         try:
-            
             for var, val in frame.f_back.f_locals.items():
                 if val is data:
                     dfname = var
@@ -290,47 +177,19 @@ class Targeter():
         else:
             self.selection = select_vars
         self.filtered = False   
-        
+        self.include_missing = include_missing
+        self.include_special = include_special
 
 
 
     # def get_binning_table(self, name):
     #    self.profiles.get_binned_variable(name).binning_table
-    
 
 
-    def get_table(self, name:str, show_digits:int = 2, add_totals:bool = False):
-        '''
-        Parameters
-        ----------
-            name : str
-                Name of the variable choosen
-            show_digits : int
-
-            add_totals : bool 
-        
-        Returns
-        -------
-
-        '''
+    def get_table(self, name, show_digits = 2, add_totals = False):
         return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
 
     def summary(self,include_labels=False):
-        '''
-    Generate a summary of the binning process and statistics for the variables.
-
-    Parameters
-    ----------
-    include_labels : bool, optional
-        Whether to include labels from metadata in the summary. Default is False.
-
-    Returns
-    -------
-    summary_df : pandas.DataFrame
-        A summary DataFrame containing information and statistics for each variable.
-
-    '''
-
 
         out = self.profiles.summary()
         
@@ -359,7 +218,6 @@ class Targeter():
                                    'Max Mean':[max_mean],
                                    'Max ER - Count':[max_count]})
                 tmp_df = pd.concat([tmp_df, max_df], ignore_index=True)
-                
 
 
         
@@ -380,44 +238,18 @@ class Targeter():
         out_selected = out[out["Selected"] == "x"].sort_values(by=["quality_score"], ascending = False)
         out_not_selected = out[out["Selected"] != "x"].sort_values(by=["quality_score"], ascending = False)
         out = pd.concat([out_selected, out_not_selected])
-        if self.target_type == "continuous":
-            for i in range(len(out["name"].values)):
-                out.loc[i,"iv"] = self.get_optbinning_object(out.loc[i,"name"]).binning_table.iv
+
         
         return(out)
 
 #    def transform(self, x, y):
 #        self.profiles.fit_transform(data, data.[target].values)
     def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = True):
-        '''
-    Plots the binning table statistics or the actual bin boundaries for a specified variable.
-
-    Parameters
-    ----------
-    name : str
-        The name of the variable for which the plot will be generated.
-    metric : str, optional
-        The metric to use for plotting bin statistics. Applicable only for binary target type.
-    add_special : bool, optional
-        Whether to include special bins in the plot (if present).
-    add_missing : bool, optional
-        Whether to include the bin for missing values in the plot (created by optbinning).
-    style : str, optional
-        The style of the plot. Choose between 'bin' (plot bin statistics) or 'actual' (plot actual bin boundaries).
-    show_bin_labels : bool, optional
-        Whether to show bin labels on the plot.
-
-    Raises
-    ------
-    ValueError
-        If the specified style is not valid.
-
-    '''
         #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
         if self.target_type == "binary":
             self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
         if self.target_type == "continuous":
-            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels)
+            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
 
         
     def get_optbinning_object(self,name:str):
@@ -425,65 +257,20 @@ class Targeter():
 #
 
     def save(self, path):
-        '''
-    Save the binning process to a pickle file.
+        """Save binning process to pickle file.
 
-    Parameters
-    ----------
-    path : str
-        The path to the pickle file where the binning process will be saved.
-
-    Raises
-    ------
-    TypeError
-        If the provided `path` is not a string.
-
-    '''
+        Parameters
+        ----------
+        path : str
+            Pickle file path.
+        """
         if not isinstance(path, str):
             raise TypeError("path must be a string.")
 
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False,include_missing:str = "any", include_special:str = "never"):
-        '''
-    Generates a report containing statistics on selected variables, plots and quadrant plots.
-
-    Parameters
-    ----------
-    out_directory : str, optional
-        The directory where the generated report will be saved. Default is the current working directory.
-    out_file : str, optional
-        The base name of the generated report file (without the extension). Default is "report".
-    template : str, optional
-        The path to the Quarto Markdown template file for the report. If not provided, a default template is used.
-    out_format : str, optional
-        The output format of the report (e.g., 'html', 'pdf'). Default is 'html'.
-    source_code_dir : str, optional
-        The directory containing the source code files for the `py-targeter` package.
-    filter : str, optional
-        The filter mode for variable selection. If "auto", applies automatic variable selection based on metrics.
-    filter_count_min : int, optional
-        The minimum count of occurrences for a bin to be considered during automatic filtering.
-    filter_n : int, optional
-        The maximum number of variables to be selected during automatic filtering.
-    force_var : list of str, optional
-        A list of variable names that must be included in the report regardless of other criteria.
-    delete_tmp : bool, optional
-        Whether to delete the temporary directory used for report generation. Default is False.
-    include_missing : str, optional
-        How to include bins for missing values in quadrant plots: "any" (at least one occurrence), "never", or "always".
-    include_special : str, optional
-        How to include special bins in quadrant plots: "never", "always", or "auto" (based on `filter` mode).
-    
-    Returns
-    -------
-    out_file : str
-        The path to the generated report file.
-
-    '''
-        self.include_missing = include_missing
-        self.include_special = include_special
+    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False):
         if filter == "auto":
             if self.filtered == False:
                 a1 = self.filter(n=filter_n, metric="quality_score").selection
@@ -543,34 +330,11 @@ class Targeter():
 
     def quadrant_plot(self,name,title=None,xlab="Count",ylab=None, color = 'red', add_missing=True, add_special=False, show=False):
         #Choose whether to show missing values or not 
-        '''
-    Generates a quadrant plot for a given variable's bin statistics.
-
-    Parameters
-    ----------
-    name : str
-        The name of the variable for which the quadrant plot is generated.
-    title : str, optional
-        The title of the quadrant plot. If not provided, the variable's label (if available) or its name is used.
-    xlab : str, optional
-        The label for the x-axis. Default is "Count".
-    ylab : str, optional
-        The label for the y-axis. If not provided, "Event rate" (for binary target) or "Mean" (for continuous target) is used.
-    color : str, optional
-        The color of the reference line representing the mean value. Default is 'red'.
-    add_missing : bool, optional
-        Whether to include the bin for missing values in the plot (created by optbinning).
-    add_special : bool, optional
-        Whether to include special bins in the plot (if present).
-    show : bool, optional
-        Whether to display the plot. Default is False.
-
-    '''
         df = self.get_table(name)
         if add_special == False:
             df = df[~df["Bin"].isin(['Special'])]
         if add_missing == False:
-            df = df[~df["Bin"].isin(['Missing'])]
+            df = df[~df["Bin"].isin(['Index'])]
         labels = df["Bin"].values
         
         x = df["Count"].values
@@ -598,8 +362,10 @@ class Targeter():
         z = [self.mean for i in range(len(x))]
         pyplot.plot(x, z, color=color)
 
-        if title is None:
+        if title is None and self._metadata is None:
             title = name
+        if title is None and self._metadata is not None:
+            title = self.label(name)[0]
         pyplot.title(title)
 
         pyplot.ylabel(ylab)
@@ -609,24 +375,6 @@ class Targeter():
 
 
     def set_metadata(self,meta:pd.DataFrame,var_col:str,label_col:str):
-        '''
-    Sets metadata for variables in the dataset with specified variable names and labels.
-
-    Parameters
-    ----------
-    meta : pd.DataFrame
-        The metadata containing variable names and corresponding labels.
-    var_col : str
-        The name of the column in the metadata DataFrame that contains the variable names.
-    label_col : str
-        The name of the column in the metadata DataFrame that contains the labels for the variables.
-
-    Raises
-    ------
-    Warning
-        If some variable names from the metadata are not present in the dataset.
-
-    '''
         self._metadata = meta[[var_col,label_col]]
         self._metadata = self._metadata.rename(columns={var_col : "name", label_col : "label"})
         if not(set(self.variable_names) <= set(self._metadata["name"].values)): 
@@ -636,26 +384,6 @@ class Targeter():
         return self._metadata
 
     def label(self,names):
-        '''
-    Assigns labels to a list of variables.
-
-    Parameters
-    ----------
-    names : str or list of str
-        The variable names to which labels need to be assigned. Can be a single variable name as a string,
-        or a list of variable names.
-
-    Returns
-    -------
-    label_descriptions : list of str
-        A list of label descriptions corresponding to the input variable names.
-
-    Raises
-    ------
-    Exception
-        If any of the specified variable names do not exist in the data.
-
-    '''    
         if type(names) == str:
             names_list = [names]
             if names not in self.variable_names:
@@ -683,40 +411,8 @@ class Targeter():
         return(labels_descriptions)
     
     def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
-        '''
-    Filters and selects variables based on a chosen metric and other criteria.
-
-    Parameters
-    ----------
-    metric : str
-        {'quality_score', 'Max Mean', 'iv', 'js', 'gini', 'Max Event Rate'}, default = 'iv'.
-        The metric used to filter the list of variables.
-    n : int
-        default = 25. The maximum number of variables to be selected.
-    min_criteria : float
-        default = 0.1. The minimum threshold for variable selection based on the chosen metric.
-    max_criteria : float, optional
-        The maximum threshold for variable selection based on the chosen metric.
-    count_min : int, optional
-        Minimum count of variable occurrences to be considered for selection.
-    force_var : list, optional
-        A list of variables to be included in the final selection regardless of other criteria.
-    sort_method : bool, default = False
-        If True, sort variables in ascending order of the chosen metric; otherwise, sort in descending order.
-
-    Returns
-    -------
-    self
-        The modified instance with the selected variables.
-
-    Raises
-    ------
-    Exception
-        If the specified metric does not match the available metrics for the target variable type.
-
-    '''
         final = self.summary()
-        continuous_metrics = ["quality_score", "Max Mean", 'iv']
+        continuous_metrics = ["quality_score", "Max Mean"]
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
         if self.target_type == "binary" and metric not in binary_metrics:
                 raise Exception("{} does not match available metrics".format(metric))
