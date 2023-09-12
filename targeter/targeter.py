@@ -1,13 +1,13 @@
-#import optbinning
 import pandas as pd
-from optbinning import BinningProcess
 import inspect
 import numpy as np
-from tempfile import mkdtemp
 import os 
 import shutil
-from pickle import dump
 import subprocess
+
+from optbinning import BinningProcess
+from tempfile import mkdtemp
+from pickle import dump
 from matplotlib import pyplot
 from adjustText import adjust_text
 
@@ -439,26 +439,4 @@ class Targeter():
 
 
 
-
-    
-        
-
-
-        
-        
-
-
-
-
-
-
-
-    
-        
-
-
-        
-        
-
-
-
+-
