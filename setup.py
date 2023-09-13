@@ -1,5 +1,4 @@
 from setuptools import setup
-
 VERSION = '0.0.1'
 
 with open("README.md", 'r') as f:
@@ -16,6 +15,7 @@ setup(
    license="MIT",
    author='WeLoveDataScience',
    author_email='eric.lecoutre@welovedatascience.com',
-   packages=['targeter'],  #same as name
+   packages=['targeter'],
+   platforms="any",
    install_requires=requirements, #external packages as dependencies
 )

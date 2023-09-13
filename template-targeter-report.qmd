@@ -34,6 +34,7 @@ execute:
 
 ```{python}
 import os
+import numpy as np
 tmpdir = os.environ['TARGETER_TMPDIR']
 
 ```
@@ -45,7 +46,9 @@ import os
 init_notebook_mode(all_interactive=False)
 # tmpdir = os.environ['TARGETER_TMPDIR']
 
-exec(open(os.path.join(tmpdir, 'targeter.py')).read())
+#exec(open(os.path.join(tmpdir, 'targeter.py')).read())
+
+import targeter
 print(tmpdir)
 tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
 
