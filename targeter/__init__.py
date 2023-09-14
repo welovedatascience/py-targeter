@@ -1,2 +1,2 @@
-from .targeter_class import Targeter
+from .targeter import Targeter
 
