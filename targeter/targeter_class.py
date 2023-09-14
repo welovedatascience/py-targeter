@@ -59,9 +59,32 @@ def apply_nan(value):
 
 
 
+def _check_parameters(data, target, select_vars, exclude_vars,
+                      target_type, categorical_variables,
+                      description_data, target_reference_level,
+                      description_target, num_as_categorical_nval):
+    if not isinstance(data, pd.DataFrame): 
+        raise TypeError("data must be a panda dataframe")
+    #TODO: add more tests/assertions
+    # for str list, see https://stackoverflow.com/questions/31353661/type-of-all-elements-in-python-list
+    # If you only want to know how many different types are in your list you can use this:
+    # set(type(x).__name__ for x in lst)
 
-class Targeter():
-    def __init__(self,data:pd.DataFrame = None, target:str = None, select_vars:list = None, exclude_vars:list = None, target_type:str = "auto", categorical_variables = "auto", description_data = None, target_reference_level = None, description_target = None,num_as_categorical_nval=5,  autoguess_nrows = 1000, metadata=None,var_col="Nom colonne", label_col="newname",include_missing:str = "any", include_special:str = "never", **optbinning_kwargs):
+class Targeter(): 
+    def __init__(self, data:pd.DataFrame=None, target:str=None, 
+                 select_vars:list=None, exclude_vars:list=None, 
+                 target_type:str="auto", categorical_variables="auto", 
+                 description_data:str=None, target_reference_level=None, 
+                 description_target:str=None, num_as_categorical_nval:int=5,  
+                 autoguess_nrows:int=1000, 
+                 metadata:pd.DataFrame=None, metadata_var:str="var", 
+                 metadata_label:str="label",
+                 include_missing:str="any", include_special:str="never",
+                 **optbinning_kwargs):
+        
+        # perform tests on parameters
+        _check_parameters(**self.get_params())
+
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if check_inf(data=data):
             raise Exception("Infinite values in your dataset")
@@ -148,8 +171,8 @@ class Targeter():
         
 
         self.variable_names = select_vars
-        if metadata is not None and var_col is not None and label_col is not None:
-            self.set_metadata(meta=metadata,var_col=var_col, label_col=label_col) 
+        if metadata is not None and metadata_var is not None and label_col is not None:
+            self.set_metadata(meta=metadata, var_col=metadata_var, label_col=metadata_label) 
         else:
             self._metadata = None  
 

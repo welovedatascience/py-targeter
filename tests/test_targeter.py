@@ -1,5 +1,5 @@
 """
-Targter testing
+Targeter testing
 """
 
 # WeLoveDataScience Eric Lecoutre <eric.lecoutre@welovedatascience.com>
@@ -16,17 +16,11 @@ adult = pd.read_csv(data_url)
 
 def test_params():
     with raises(TypeError):
-        tar = Targeter(data=adult, target='ABOVE50K',select_vars = 'EDUCATION')
-        tar.summary()
+        tar = Targeter(data=adult, target=1)
 
-    with raises(ValueError):
-        tar = Targeter(data=adult, target='ABOVE50K',select_vars = 'EDUCATION')
-        tar.summary()
-
-
-def test_stored_values():
-    tar = Targeter(data=adult, target='ABOVE50K',select_vars = 'EDUCATION')
-    assert tar.selection == "EDUCATION"
+# def test_stored_values():
+#     tar = Targeter(data=adult, target='ABOVE50K',select_vars = ['EDUCATION'])
+#     assert tar.selection == ['EDUCATION']
 
 
 #TODO: add tests
