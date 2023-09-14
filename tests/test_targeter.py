@@ -16,7 +16,10 @@ adult = pd.read_csv(data_url)
 
 def test_params():
     with raises(TypeError):
-        tar = Targeter(data=adult, target=1)
+        tar = Targeter(data=1) #data not pd.DataFrame
+
+    with raises(TypeError):
+        tar = Targeter(data=adult, target=1) 
 
 # def test_stored_values():
 #     tar = Targeter(data=adult, target='ABOVE50K',select_vars = ['EDUCATION'])
