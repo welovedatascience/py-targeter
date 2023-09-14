@@ -3,6 +3,7 @@ Targeter testing
 """
 
 # WeLoveDataScience Eric Lecoutre <eric.lecoutre@welovedatascience.com>
+# Copyright (C) 2023
 
 import pandas as pd
 

@@ -1,3 +1,10 @@
+"""
+Target automated EDA with targeter
+"""
+
+# WeLoveDataScience Eric Lecoutre <eric.lecoutre@welovedatascience.com>
+# Copyright (C) 2023
+
 
 import pandas as pd
 import inspect
@@ -12,7 +19,10 @@ from pickle import dump
 from matplotlib import pyplot
 from adjustText import adjust_text
 from shutil import rmtree
-from pkg_resources import resource_filename
+
+# from pkg_resources import resource_filename
+from importlib_resources import files
+
 from .autoguess import autoguess
 
 def _check_inf(data:pd.DataFrame):
@@ -30,6 +40,97 @@ def _apply_nan(value):
 
 
 class Targeter(): 
+    """ Target automated EDA main function.
+    
+    Parameters
+    ----------
+
+    data : DataFrame
+        Panda dataframe containing target and explanatory candidates variables.
+
+    target: str
+        Name of the column of data to be used as target.
+    
+    select_vars: list or None, optiopnal (default=None)
+        List of variables to be crossed with target. If None (default), all
+        variables will be used (except target).
+    
+    exclude_vars: list or None, optional (default=None)
+        List of variables to be excluded for the analysis. Tyically id or text
+        variables. 
+    
+    target_type: str. One of "binary","continuous", "auto", optional (default="auto")
+        If "auto", one will try to identify the nature of the target by using
+        ``autoguess``.
+
+    categorical_variables : array-like or None, optional (default=None)
+        List of variables numerical variables to be considered categorical.
+        These are nominal variables. 
+    
+    description_data: str or None, optional (default=None)
+        Will be stored in output object and used in report.
+    
+    target_reference_level: float/int/bool/str or None, optional (default=none)
+        For binary and categorical targets (eventually detected as that via 
+        ``autoguess`` , value of reference. Typically one of 1, "1", "YES"...
+    
+    description_target: str or None, optional (default=None).
+        Will be stored in output object and used in report. 
+
+    num_as_categorical_nval: int, optional (default=5)
+        When (if) using ``autoguess``, all numeric variales having 
+        ``num_as_categorical_nval`` or less distinct values will be considered 
+        as categorical.
+
+    autoguess_nrows: int, optional (default=1000) 
+        Number of rows of ``data`` to be used for variables nature automated
+        guess.
+    
+    metadata: DataFrame or None, optional (default=None)
+        DataFrame containing metadata to use labels in reports. DataFrame must
+        contain at least 2 columns, one containing variable names (default 
+        column name: "var", possibly changed using ``metadata_var`` parameter)
+        and a second column containing the label (default name: "label").
+
+    metadata_var; str, optional (default="var")
+        Name of the column that contains variables names in ``metadata``
+        DataFrame.
+    
+    metadata_label; str, optional (default="label")
+        Name of the column that contains variables labels  in ``metadata``
+        DataFrame.
+
+    include_missing: str, one of "any", "always", "never", optional (default="any")
+        Defines if report should display missing values category. If "always", 
+        Missing will always be displayed in graphics (even if data does not
+        contain any missing), if "never", Missing wil be removed (even if data
+        does contain missing values). If "any", Missing category will be used
+        if and only if there is at least one missing value.
+
+    include_special: str, one of "any", "always", "never", optional (default="never")
+        Similar to ``include_missing`` for ``OptBinning`` Special class.
+    
+    **optbinning_kwargs : keyword arguments.
+        Arguments to be passed to ``ProcessBinning``. allowing for instance to
+        feed its parameter ``binning_fit_params``.
+    
+    
+    Notes
+    -----
+
+    User is highly encouraged to read   ``OptBinning``  package documentation
+    to potentially exploit all of its features to customize computation / 
+    behaviour (Special values, pre-binning,...).
+
+    For variables shortlist selection, we don't rely on ``OptBinning`` but
+    have our own (different) implementation via ``filter`` method.
+
+    .. warning::
+        Do not pass the option ```"solver": "mit"`` in OptBinniong parameters
+        as we want to be able to store the object for reporting.
+
+    """
+
     def __init__(self, data:pd.DataFrame=None, target:str=None, 
                  select_vars:list=None, exclude_vars:list=None, 
                  target_type:str="auto", categorical_variables="auto", 
@@ -301,8 +402,8 @@ class Targeter():
         if template is None:
             ## see https://stackoverflow.com/questions/6028000/how-to-read-a-static-file-from-inside-a-python-package
             # template = pkgutil.get_data(__name__, "assets/template-targeter-report.qmd")
-            template_path = 'assets/template-targeter-report.qmd'  # always use slash
-            template = resource_filename(__name__, template_path)
+            template_path = 'template-targeter-report.qmd'  # always use slash
+            template =  files("targeter.assets").joinpath(template_path)
             
             # template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
