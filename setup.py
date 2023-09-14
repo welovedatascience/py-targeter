@@ -17,5 +17,6 @@ setup(
    author_email='eric.lecoutre@welovedatascience.com',
    packages=['targeter'],
    platforms="any",
-   install_requires=requirements, #external packages as dependencies
+   install_requires=requirements, #external packages as dependencies,
+   include_package_data=True
 )

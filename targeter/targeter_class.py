@@ -11,7 +11,8 @@ from tempfile import mkdtemp
 from pickle import dump
 from matplotlib import pyplot
 from adjustText import adjust_text
-
+from shutil import rmtree
+from pkgutil import get_data
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
         column = data[var] #<TODO> add filter on rows
@@ -271,7 +272,10 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template=None, out_format='html',source_code_dir='C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter',filter="auto", filter_count_min=500, filter_n=20, force_var=None, delete_tmp=False):
+    def report(self, out_directory='.', out_file=None, template=None, 
+               out_format='html',filter="auto", filter_count_min=500, 
+               filter_n=20, force_var=None, delete_tmp=True):
+
         if filter == "auto":
             if self.filtered == False:
                 a1 = self.filter(n=filter_n, metric="quality_score").selection
@@ -299,16 +303,14 @@ class Targeter():
     
     # copy template to the temporary folder
         if template is None:
-            template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
+            ## see https://stackoverflow.com/questions/6028000/how-to-read-a-static-file-from-inside-a-python-package
+            template = pkgutil.get_data(__name__, "assets/template-targeter-report.qmd")
+            # template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
         shutil.copy(template, to_template)
     
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
         self.save(tar_pickle_path)
- 
-  #      tofile = os.path.join(tmpdir, 'targeter.py')
-  #      shutil.copy(os.path.join(source_code_dir, 'targeter', '__init__.py'), tofile)
-    
         os.environ['TARGETER_TMPDIR'] = tmpdir
     
         cmd = 'quarto render targeter-report.qmd --output generated_report --to ' + out_format
@@ -324,7 +326,7 @@ class Targeter():
         shutil.copy(report_file, out_file)
     
         if delete_tmp:
-            os.remove(tmpdir, 'targeter.py')
+            shutil.rmtree(tmpdir, ignore_errors=True)
     
         return out_file
 
@@ -339,7 +341,7 @@ class Targeter():
         labels = df["Bin"].values
         
         x = df["Count"].values
-          
+
         if self.target_type == "binary":
             y = df["Event rate"].values
             if ylab == None:
@@ -352,7 +354,7 @@ class Targeter():
     
         pyplot.scatter(x, y)
         pyplot.xlabel(xlab)
-           
+
         texts = []
         for i in range(len(x)):
             text_label = ' '.join(str(label) for label in labels[i])
@@ -411,14 +413,29 @@ class Targeter():
         
         return(labels_descriptions)
     
-    def filter(self,metric:str="iv",n:int=25,min_criteria:float=0.1, count_min:int = None,force_var:list = None,max_criteria:float = None, sort_method:bool = False):
+    def filter(self,
+               metric:str="auto",
+               n:int=25,
+               min_criteria:float=0.1,
+               count_min:int = None,
+               force_var:list = None,
+               max_criteria:float = None,
+               sort_method:bool = False):
         final = self.summary()
+        target_type = self.target_type
         continuous_metrics = ["quality_score", "Max Mean"]
         binary_metrics = ["iv", "js", "gini", "quality_score", "Max Event Rate"]
-        if self.target_type == "binary" and metric not in binary_metrics:
-                raise Exception("{} does not match available metrics".format(metric))
-        if self.target_type == "continuous" and metric not in continuous_metrics:
-                raise Exception("{} does not match available metrics".format(metric))
+        if (metric == "auto"):
+            if (target_type == "binary"):
+                metric = binary_metrics[0]
+            elif (target_type =="continuus"):
+                metric = continuous_metrics[0]
+        else:
+            if target_type == "binary" and metric not in binary_metrics:
+                    raise Exception("{} does not match available metrics".format(metric))
+            if target_type == "continuous" and metric not in continuous_metrics:
+                    raise Exception("{} does not match available metrics".format(metric))
+        # determine set
         final = final.drop(final[final[metric] < min_criteria].index)
         if max_criteria is not None:
             final = final.drop(final[final[metric] > max_criteria].index)
@@ -431,11 +448,14 @@ class Targeter():
         if n is not None:
             final = final.iloc[0:n,:]
         variables_selected = list(final["name"].values)
+        
         if force_var is not None:
             variables_selected = variables_selected + force_var
         variables_selected = list(set(variables_selected))
+
         self.selection = variables_selected
         self.filtered = True
+
         return(self)
 
 
