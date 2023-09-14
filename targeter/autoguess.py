@@ -1,3 +1,5 @@
+import pandas as pd
+
 def autoguess(data:pd.DataFrame=None, var:str=None, 
               remove_missing:bool=True, num_as_categorical_nval:int=5,
                autoguess_nrows:int=1000):

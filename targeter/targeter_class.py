@@ -13,9 +13,7 @@ from matplotlib import pyplot
 from adjustText import adjust_text
 from shutil import rmtree
 from pkg_resources import resource_filename
-
-
-
+from .autoguess import autoguess
 
 def _check_inf(data:pd.DataFrame):
     numeric_columns = data.select_dtypes(include=[np.number]).columns
@@ -73,6 +71,7 @@ class Targeter():
         proportions = counts / len(data)
         self.index = list(data[target].unique())
         index = list(data[target].unique())
+
          # handle target type
         if target_type == "auto":
             target_type = autoguess(data, var = target, remove_missing=True,num_as_categorical_nval=5,  autoguess_nrows = 1000)
