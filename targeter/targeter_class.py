@@ -12,7 +12,10 @@ from pickle import dump
 from matplotlib import pyplot
 from adjustText import adjust_text
 from shutil import rmtree
-from pkgutil import get_data
+from pkg_resources import resource_filename
+
+
+
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
         column = data[var] #<TODO> add filter on rows
@@ -304,7 +307,10 @@ class Targeter():
     # copy template to the temporary folder
         if template is None:
             ## see https://stackoverflow.com/questions/6028000/how-to-read-a-static-file-from-inside-a-python-package
-            template = pkgutil.get_data(__name__, "assets/template-targeter-report.qmd")
+            # template = pkgutil.get_data(__name__, "assets/template-targeter-report.qmd")
+            template_path = 'assets/template-targeter-report.qmd'  # always use slash
+            template = resource_filename(__name__, template_path)
+            
             # template = 'C:/Users/natha/OneDrive/Documents/WeLoveDataScience/py-targeter/template-targeter-report.qmd'
         to_template = os.path.join(tmpdir, 'targeter-report.qmd')
         shutil.copy(template, to_template)
@@ -312,7 +318,7 @@ class Targeter():
         tar_pickle_path = os.path.join(tmpdir, 'targeter.pickle')
         self.save(tar_pickle_path)
         os.environ['TARGETER_TMPDIR'] = tmpdir
-    
+        #TODO check if quarto is installed 
         cmd = 'quarto render targeter-report.qmd --output generated_report --to ' + out_format
     
         p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
@@ -323,6 +329,7 @@ class Targeter():
         out_file = os.path.join(out_directory, out_file+'.'+out_format)
     
         report_file = os.path.join(tmpdir, 'generated_report').replace(os.sep, "/")
+        #TODO try and catch error
         shutil.copy(report_file, out_file)
     
         if delete_tmp:
