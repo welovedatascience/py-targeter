@@ -18,7 +18,7 @@ from pkg_resources import resource_filename
 
 
 def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
-        column = data[var] #<TODO> add filter on rows
+        column = data[var] #TODO add filter on rows
         if (remove_missing):
             column = column[column.notnull()]
         column = column.values
