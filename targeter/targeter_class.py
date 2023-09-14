@@ -44,7 +44,11 @@ class Targeter():
         # perform tests on parameters
         if not isinstance(data, pd.DataFrame): 
             raise TypeError("data must be a panda dataframe")
+        if not isinstance(target, str): 
+            raise TypeError("target must be a string.")
+
         #TODO: add more tests/assertions
+
         # for str list, see https://stackoverflow.com/questions/31353661/type-of-all-elements-in-python-list
         # If you only want to know how many different types are in your list you can use this:
         # set(type(x).__name__ for x in lst)
