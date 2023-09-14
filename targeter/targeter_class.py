@@ -45,13 +45,13 @@ def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autogu
         return "unknown"
 #autoguess(df, " ABOVE50K")
 
-def check_inf(data:pd.DataFrame):
+def _check_inf(data:pd.DataFrame):
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
         if np.inf in data[column].values:
             return True
     return False
-def apply_nan(value):
+def _apply_nan(value):
     if str(value) == "nan":
         return None
     else:
@@ -86,7 +86,7 @@ class Targeter():
         _check_parameters(**self.get_params())
 
         # retrieve dataframe name from call and store it in ouput 'data' slot
-        if check_inf(data=data):
+        if _check_inf(data=data):
             raise Exception("Infinite values in your dataset")
         frame = inspect.currentframe()
         dfname=''
@@ -100,7 +100,7 @@ class Targeter():
         for var in data.columns:
             if autoguess(data,var) == "binary_num":
                 data[var] = data[var].apply(str)
-            data[var] = data[var].apply(apply_nan)
+            data[var] = data[var].apply(_apply_nan)
         self.target = target
         counts = data[target].value_counts()
         proportions = counts / len(data)
@@ -171,7 +171,7 @@ class Targeter():
         
 
         self.variable_names = select_vars
-        if metadata is not None and metadata_var is not None and label_col is not None:
+        if metadata is not None and metadata_var is not None and metadata_label is not None:
             self.set_metadata(meta=metadata, var_col=metadata_var, label_col=metadata_label) 
         else:
             self._metadata = None  
