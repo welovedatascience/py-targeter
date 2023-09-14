@@ -17,34 +17,6 @@ from pkg_resources import resource_filename
 
 
 
-def autoguess(data, var, remove_missing=True, num_as_categorical_nval=5,  autoguess_nrows = 1000):
-        column = data[var] #TODO add filter on rows
-        if (remove_missing):
-            column = column[column.notnull()]
-        column = column.values
-        type_col = type(column[0])
-        if type_col == bool:
-            return "binary_bool"
-        vals = list(set(column))
-        if type_col == str:
-            if len(vals) == 1:
-                return "unimode"
-            elif len(vals) == 2:
-                return "binary_str"
-            else:
-                return "categorical_str"
-        if (type(column[0].item()) == float) | (type(column[0].item()) == int):
-            if len(vals) == 1:
-                return "unimode"
-            elif len(vals) == 2:
-                return "binary_num"
-            elif len(vals) <= num_as_categorical_nval:
-                return "categorical_num"
-            else:
-                return "continuous"
-        return "unknown"
-#autoguess(df, " ABOVE50K")
-
 def _check_inf(data:pd.DataFrame):
     numeric_columns = data.select_dtypes(include=[np.number]).columns
     for column in numeric_columns:
@@ -59,17 +31,6 @@ def _apply_nan(value):
 
 
 
-def _check_parameters(data, target, select_vars, exclude_vars,
-                      target_type, categorical_variables,
-                      description_data, target_reference_level,
-                      description_target, num_as_categorical_nval):
-    if not isinstance(data, pd.DataFrame): 
-        raise TypeError("data must be a panda dataframe")
-    #TODO: add more tests/assertions
-    # for str list, see https://stackoverflow.com/questions/31353661/type-of-all-elements-in-python-list
-    # If you only want to know how many different types are in your list you can use this:
-    # set(type(x).__name__ for x in lst)
-
 class Targeter(): 
     def __init__(self, data:pd.DataFrame=None, target:str=None, 
                  select_vars:list=None, exclude_vars:list=None, 
@@ -83,7 +44,13 @@ class Targeter():
                  **optbinning_kwargs):
         
         # perform tests on parameters
-        _check_parameters(**self.get_params())
+        if not isinstance(data, pd.DataFrame): 
+            raise TypeError("data must be a panda dataframe")
+        #TODO: add more tests/assertions
+        # for str list, see https://stackoverflow.com/questions/31353661/type-of-all-elements-in-python-list
+        # If you only want to know how many different types are in your list you can use this:
+        # set(type(x).__name__ for x in lst)
+
 
         # retrieve dataframe name from call and store it in ouput 'data' slot
         if _check_inf(data=data):
