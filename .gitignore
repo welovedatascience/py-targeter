@@ -168,3 +168,6 @@ report.html.html
 py-targeter.code-workspace
 report.html
 report.html
+
+# VScode
+.vscode/
