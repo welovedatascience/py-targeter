@@ -23,7 +23,7 @@ from shutil import rmtree
 # from pkg_resources import resource_filename
 from importlib_resources import files
 
-from .autoguess import autoguess
+from .utils import autoguess
 
 def _check_inf(data:pd.DataFrame):
     numeric_columns = data.select_dtypes(include=[np.number]).columns
@@ -40,7 +40,7 @@ def _apply_nan(value):
 
 
 class Targeter(): 
-    """ Target automated EDA main function.
+    """ targeter for automated EDA.
     
     Parameters
     ----------
@@ -286,9 +286,26 @@ class Targeter():
 
 
     def get_table(self, name, show_digits = 2, add_totals = False):
-        return(self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals))
+        out_table = self.get_optbinning_object(name).binning_table.build(show_digits = show_digits, add_totals = add_totals)
+        #TODO: handle Missing/Special potential autohode, show_missing, show_special any, always; never
+        return(out_table)
 
     def summary(self,include_labels=False):
+        """Build a summary table
+        
+        Parameters
+        ----------
+        include_labels : bool optional (default to False)
+            if object contains some metadata, do we use them
+            to include labels in the output table? (recommended for 
+            reports) - defaults to False
+
+
+        .. note::    
+            Targeter summary tableconsists in an enriched version of  OptBinning
+            summary table.
+        
+        """
 
         out = self.profiles.summary()
         
@@ -343,15 +360,68 @@ class Targeter():
 
 #    def transform(self, x, y):
 #        self.profiles.fit_transform(data, data.[target].values)
-    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = True):
-        #<TODO> define style as defualt 'auto' for dtype=numeric use 'actual' if not use 'bin'
+    def plot(self, name, metric = 'event_rate', add_special = False, add_missing = True, style = 'bin', show_bin_labels = True, savefig = None):
+        """Relation to target summary plot for one variable.
+
+        This function is neraly a direct call of ``OptBinning`` :meth:`OptBinning.BinningTable.plot` method.
+
+        Parameters
+        ----------
+        path : name: str, mandatory
+            Name of the variable.
+
+        metric : str, optional (default="woe")
+            Supported metrics are "woe" to show the Weight of Evidence (WoE)
+            measure and "event_rate" to show the event rate.
+
+            .. note::
+                Parameter ``metric`` has no effect for continuous targets.
+            
+        add_special : bool (default=True)
+            Whether to add the special codes bin.
+
+        add_missing : bool (default=True)
+            Whether to add the special values bin.
+
+        style : str, optional (default="bin")
+            Plot style. style="bin" shows the standard binning plot. If
+            style="actual", show the plot with the actual scale, i.e, actual
+            bin widths.
+
+        show_bin_labels : bool (default=False)
+            Whether to show the bin label instead of the bin id on the x-axis.
+            For long labels (length > 27), labels are truncated.
+
+        savefig : str or None (default=None)
+            Path to save the plot figure.        
+        """
+
+        #TODO define style as default 'auto' for dtype=numeric use 'actual' if not use 'bin'
+        #TODO: add check such as: name is in list of variables
         if self.target_type == "binary":
-            self.get_optbinning_object(name).binning_table.plot(metric = metric,add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+            self.get_optbinning_object(name).binning_table.plot(
+                metric = metric,
+                add_special = add_special, add_missing = add_missing,
+                style = style, show_bin_labels = show_bin_labels,
+                savefig = savefig)
         if self.target_type == "continuous":
-            self.get_optbinning_object(name).binning_table.plot(add_special = add_special, add_missing = add_missing, style = style, show_bin_labels = show_bin_labels )
+            self.get_optbinning_object(name).binning_table.plot(
+                add_special = add_special, add_missing = add_missing,
+                style = style, show_bin_labels = show_bin_labels,
+                savefig = savefig)
 
         
     def get_optbinning_object(self,name:str):
+        """  Retrieve OptBinning objet for a given variable.
+
+        Parameters
+        ----------
+        name : str
+            Name of the variable.
+
+        """
+        #TODO: add check if name is present in list of variables
+        # suggestion: fuzzy check?
         return(self.profiles.get_binned_variable(name))
 #
 
@@ -369,12 +439,55 @@ class Targeter():
         with open(path, "wb") as f:
             dump(self, f)
 
-    def report(self, out_directory='.', out_file=None, template=None, 
+    def report(self, out_directory='.', out_file='repport', template=None, 
                out_format='html',filter="auto", filter_count_min=500, 
                filter_n=20, force_var=None, delete_tmp=True):
+        """Generate a report through Quarto engine.
 
-        if filter == "auto":
-            if self.filtered == False:
+        Parameters
+        ----------
+        out_directory : str, optional (default=".")
+            Output directory.
+        out_file: str, optional (default="report')
+            Output file name, without extension
+        template: str, optional (default=None)
+            Path to a template Quarto file. If None (default), report will be
+            built using py-targeter provided template.
+        out_format: str, optional (default="html")
+            Format of the report, one of "html", "word", "pdf". Note that pdf
+            requires a LaTeX installation (see Quarto documentation)
+        filter: str, optional (default="auto")
+            Value "auto" will select key variables using all metrics availables
+            (union) if targeter object is not already filtered. To force a 
+            (new) filter, one can use value "force". Any other value for 
+            ``filter`` will result in doing nothing and using the full list of
+            variables available in the report (potentially resulting in a big
+            file).
+        filter_count_min: int, optional (default=500)
+            Parameter passed to ``filter`` methods. Avoid selecting modalities
+            with high value for target average but with low frequencies (here
+            by default less than 500 records).
+        filter_n: int, optional (default=20)
+            When filtering before report, we call ``filter`` method for all
+            available metrics, considering top ``filter_n`` variables and then
+            ultimately taking the **union** of all selected variables. As such,
+            report can contain more than ``filter_n`` variables.
+        force_var: list or None, optional (default=None)
+            Array-like list of strings containing names of variables we want
+            to see in the report even if they wouldn't have been selected by a
+            filter. 
+        delete_tmp: bool, optional (default=True)
+            Should we delete everything in the temporary directory used by 
+            ```report`` (parameter manly used by package developpers to debug).
+
+        .. warning::
+            Generating a report requires the system dependency of Quarto 
+            (availibility not tested currently).
+
+        """
+
+        if (filter == "auto") or (filter == "force"):
+            if (self.filtered == False) or (self.filtered == True and filter == "force" ):
                 a1 = self.filter(n=filter_n, metric="quality_score").selection
             
                 if self.target_type == "binary":
@@ -418,8 +531,8 @@ class Targeter():
         p = subprocess.Popen(cmd, cwd=tmpdir, shell=True, stdout=subprocess.PIPE)
         p.wait()
     
-        if out_file is None:
-            out_file = 'report'
+        # if out_file is None:
+        #     out_file = 'report'
         out_file = os.path.join(out_directory, out_file+'.'+out_format)
     
         report_file = os.path.join(tmpdir, 'generated_report').replace(os.sep, "/")
