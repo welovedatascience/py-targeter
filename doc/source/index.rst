@@ -22,12 +22,12 @@ variables in an efficient way.
    :maxdepth: 1
    :caption: Getting started:
 
-..   installation
-..   tutorials
+   installation
+   tutorials/tutorial_targeter 
 
 .. toctree::
    :maxdepth: 1
    :caption: Technical documentation:
 
-   code_targeter
+   targeter
 

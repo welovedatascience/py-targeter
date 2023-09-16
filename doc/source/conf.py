@@ -35,10 +35,16 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
+    'sphinx.ext.intersphinx',
     'nbsphinx',
     'sphinx.ext.autosectionlabel'
 ]
 
+
+
+intersphinx_mapping = {'OptBinning': ('http://gnpalencia.org/optbinning/', None)}
+
+intersphinx_disabled_reftypes = ["*"] # cf https://docs.readthedocs.io/en/stable/guides/intersphinx.html
 
 templates_path = ['_templates']
 exclude_patterns = []
