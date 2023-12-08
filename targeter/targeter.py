@@ -23,7 +23,6 @@ from shutil import rmtree
 # from pkg_resources import resource_filename
 from importlib_resources import files
 
-from .utils import autoguess
 
 def _check_inf(data:pd.DataFrame):
     numeric_columns = data.select_dtypes(include=[np.number]).columns
@@ -377,7 +376,7 @@ class Targeter():
             .. note::
                 Parameter ``metric`` has no effect for continuous targets.
             
-        add_special : bool (default=True)
+        add_special : bool (default=False)
             Whether to add the special codes bin.
 
         add_missing : bool (default=True)
@@ -398,14 +397,15 @@ class Targeter():
 
         #TODO define style as default 'auto' for dtype=numeric use 'actual' if not use 'bin'
         #TODO: add check such as: name is in list of variables
+        binning_table =self.get_optbinning_object(name).binning_table
         if self.target_type == "binary":
-            self.get_optbinning_object(name).binning_table.plot(
+            binning_table.plot(
                 metric = metric,
                 add_special = add_special, add_missing = add_missing,
                 style = style, show_bin_labels = show_bin_labels,
                 savefig = savefig)
         if self.target_type == "continuous":
-            self.get_optbinning_object(name).binning_table.plot(
+            binning_table.plot(
                 add_special = add_special, add_missing = add_missing,
                 style = style, show_bin_labels = show_bin_labels,
                 savefig = savefig)
@@ -674,3 +674,48 @@ class Targeter():
 
 
 
+
+import pandas as pd
+from pkg_resources import resource_filename
+
+def load_adult_data():
+    data_path = resource_filename("targeter", "assets/adult.csv")
+    adult = pd.read_csv(data_path)
+    return adult
+import pandas as pd
+
+def autoguess(data:pd.DataFrame=None, var:str=None, 
+              remove_missing:bool=True, num_as_categorical_nval:int=5,
+               autoguess_nrows:int=1000):
+
+        # perform tests on parameters
+        if not isinstance(data, pd.DataFrame): 
+            raise TypeError("data must be a panda dataframe")
+        #TODO: add more tests/assertions
+
+        column = data[var] #TODO add filter on rows
+        if (remove_missing):
+            column = column[column.notnull()]
+        column = column.values
+        type_col = type(column[0])
+        if type_col == bool:
+            return "binary_bool"
+        vals = list(set(column))
+        if type_col == str:
+            if len(vals) == 1:
+                return "unimode"
+            elif len(vals) == 2:
+                return "binary_str"
+            else:
+                return "categorical_str"
+        if (type(column[0].item()) == float) | (type(column[0].item()) == int):
+            if len(vals) == 1:
+                return "unimode"
+            elif len(vals) == 2:
+                return "binary_num"
+            elif len(vals) <= num_as_categorical_nval:
+                return "categorical_num"
+            else:
+                return "continuous"
+        return "unknown"
+#autoguess(df, " ABOVE50K")

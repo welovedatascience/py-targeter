@@ -171,3 +171,4 @@ report.html
 
 # VScode
 .vscode/
+targeter/assets/targeter.pickle

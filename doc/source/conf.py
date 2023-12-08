@@ -76,8 +76,8 @@ html_theme_options = {
 html_show_sourcelink = False
 
 html_theme = 'sphinx_rtd_theme'
-#html_logo = '_images/logo_optbinning.svg'
-html_favicon = '_images/logo_optbinning.ico'
+html_logo = '_images/targeter.png'
+html_favicon = '_images/favicon.ico'
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
