@@ -104,16 +104,6 @@ if tar.target_type == "binary":
             df = df[(df['Bin'] != 'Missing') | 
                         ( (df['Bin']=='Missing') & ((df['Event']>0)|(df['Non-event']>0))) ]
 
-
-        # events = df[['Bin','Event']]
-        # events = events.rename(columns={'Event':'Count'})
-        # events['Target']='Event'
-
-        # nonevents = df[['Bin','Non-event']]
-        # nonevents = nonevents.rename(columns={'Non-event':'Count'})
-        # nonevents['Target']='Non-event'
-
-        # dfp = pd.concat( [events, nonevents])
         
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
@@ -121,18 +111,47 @@ if tar.target_type == "binary":
         # Create figure with secondary y-axis
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-        fig.add_bar(x=df['Bin'], y=df['Event'])
-        fig.add_bar(x=df['Bin'], y=df['Non-event'])
+        fig.add_trace(
+            go.Bar(
+                x=df['Bin'], 
+                y=df['Event'], 
+                name='Event', 
+                marker_color='#872727',
+                opacity=0.85
+                )
+            )
+        fig.add_trace(
+            go.Bar(
+                x=df['Bin'], 
+                y=df['Non-event'], 
+                name='Non-event', 
+                marker_color='#222277',
+                opacity=0.85
+                )
+            )
         fig.update_layout(barmode='stack',
                   title =selected_var,
                   template = 'plotly_dark')
         
         fig.add_trace(
-            go.Scatter(x=df['Bin'], y=df['Event rate'], name="%"),
+            go.Scatter(
+                x=df['Bin'], 
+                y=df['Event rate'], 
+                name="%",
+                marker_color = 'darkred'),
             secondary_y=True,
         )
         
         st.plotly_chart(fig)
     
         with st.expander('Table'):
-            st.markdown(df.to_html(), unsafe_allow_html=True)
+            gb2 = GridOptionsBuilder.from_dataframe(df)
+
+            gb2.configure_grid_options(domLayout='normal')
+            gridOptions2 = gb2.build()
+            
+            #Display the grid 
+
+            AgGrid(df,
+                    gridOptions=gridOptions2, 
+                    width='100%')
