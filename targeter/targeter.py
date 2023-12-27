@@ -366,7 +366,7 @@ class Targeter():
 
         Parameters
         ----------
-        path : name: str, mandatory
+        name: str, mandatory
             Name of the variable.
 
         metric : str, optional (default="woe")
@@ -480,12 +480,11 @@ class Targeter():
             Should we delete everything in the temporary directory used by 
             ```report`` (parameter manly used by package developpers to debug).
 
-        .. warning::
-            Generating a report requires the system dependency of Quarto 
-            (availibility not tested currently).
-
+        warnings
+        --------
+        Generating a report requires the system dependency of Quarto 
+        (availibility not tested currently).
         """
-
         if (filter == "auto") or (filter == "force"):
             if (self.filtered == False) or (self.filtered == True and filter == "force" ):
                 a1 = self.filter(n=filter_n, metric="quality_score").selection

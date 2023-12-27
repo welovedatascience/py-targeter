@@ -1,0 +1,152 @@
+# targeter { #targeter.targeter }
+
+`targeter`
+
+Target automated EDA with targeter
+
+## Classes
+
+| Name | Description |
+| --- | --- |
+| [Targeter](#targeter.targeter.Targeter) | targeter for automated EDA. |
+
+### Targeter { #targeter.targeter.Targeter }
+
+`targeter.Targeter(self, data=None, target=None, select_vars=None, exclude_vars=None, target_type='auto', categorical_variables='auto', description_data=None, target_reference_level=None, description_target=None, num_as_categorical_nval=5, autoguess_nrows=1000, metadata=None, metadata_var='var', metadata_label='label', include_missing='any', include_special='never', **optbinning_kwargs)`
+
+targeter for automated EDA.
+
+#### Parameters
+
+| Name                      | Type                                           | Description                                                                                                                                                                                                                                                                                                                                  | Default   |
+|---------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `data`                    | DataFrame                                      | Panda dataframe containing target and explanatory candidates variables.                                                                                                                                                                                                                                                                      | `None`    |
+| `target`                  | str                                            | Name of the column of data to be used as target.                                                                                                                                                                                                                                                                                             | `None`    |
+| `select_vars`             | list                                           | List of variables to be crossed with target. If None (default), all variables will be used (except target).                                                                                                                                                                                                                                  | `None`    |
+| `exclude_vars`            | list                                           | List of variables to be excluded for the analysis. Tyically id or text variables.                                                                                                                                                                                                                                                            | `None`    |
+| `target_type`             | str                                            | If "auto", one will try to identify the nature of the target by using ``autoguess``.                                                                                                                                                                                                                                                         | `'auto'`  |
+| `categorical_variables`   | (array - like or None, optional(default=None)) | List of variables numerical variables to be considered categorical. These are nominal variables.                                                                                                                                                                                                                                             | `'auto'`  |
+| `description_data`        | str                                            | Will be stored in output object and used in report.                                                                                                                                                                                                                                                                                          | `None`    |
+| `target_reference_level`  |                                                | For binary and categorical targets (eventually detected as that via  ``autoguess`` , value of reference. Typically one of 1, "1", "YES"...                                                                                                                                                                                                   | `None`    |
+| `description_target`      | str                                            | Will be stored in output object and used in report.                                                                                                                                                                                                                                                                                          | `None`    |
+| `num_as_categorical_nval` | int                                            | When (if) using ``autoguess``, all numeric variales having  ``num_as_categorical_nval`` or less distinct values will be considered  as categorical.                                                                                                                                                                                          | `5`       |
+| `autoguess_nrows`         | int                                            | Number of rows of ``data`` to be used for variables nature automated guess.                                                                                                                                                                                                                                                                  | `1000`    |
+| `metadata`                | pandas.pandas.DataFrame                        | DataFrame containing metadata to use labels in reports. DataFrame must contain at least 2 columns, one containing variable names (default  column name: "var", possibly changed using ``metadata_var`` parameter) and a second column containing the label (default name: "label").                                                          | `None`    |
+| `metadata_var`            | str                                            | Name of the column that contains variables names in ``metadata`` DataFrame.                                                                                                                                                                                                                                                                  | `'var'`   |
+| `metadata_label`          | str                                            | Name of the column that contains variables labels  in ``metadata`` DataFrame.                                                                                                                                                                                                                                                                | `'label'` |
+| `include_missing`         | str                                            | Defines if report should display missing values category. If "always",  Missing will always be displayed in graphics (even if data does not contain any missing), if "never", Missing wil be removed (even if data does contain missing values). If "any", Missing category will be used if and only if there is at least one missing value. | `'any'`   |
+| `include_special`         | str                                            | Similar to ``include_missing`` for ``OptBinning`` Special class.                                                                                                                                                                                                                                                                             | `'never'` |
+| `**optbinning_kwargs`     | keyword arguments.                             | Arguments to be passed to ``ProcessBinning``. allowing for instance to feed its parameter ``binning_fit_params``.                                                                                                                                                                                                                            | `{}`      |
+
+
+
+
+#### Notes
+
+
+User is highly encouraged to read   ``OptBinning``  package documentation
+to potentially exploit all of its features to customize computation / 
+behaviour (Special values, pre-binning,...).
+
+For variables shortlist selection, we don't rely on ``OptBinning`` but
+have our own (different) implementation via ``filter`` method.
+
+.. warning::
+    Do not pass the option ```"solver": "mit"`` in OptBinniong parameters
+    as we want to be able to store the object for reporting.
+
+#### Methods
+
+| Name | Description |
+| --- | --- |
+| [get_optbinning_object](#targeter.targeter.Targeter.get_optbinning_object) | Retrieve OptBinning objet for a given variable. |
+| [plot](#targeter.targeter.Targeter.plot) | Relation to target summary plot for one variable. |
+| [report](#targeter.targeter.Targeter.report) | Generate a report through Quarto engine. |
+| [save](#targeter.targeter.Targeter.save) | Save binning process to pickle file. |
+| [summary](#targeter.targeter.Targeter.summary) | Build a summary table |
+
+##### get_optbinning_object { #targeter.targeter.Targeter.get_optbinning_object }
+
+`targeter.Targeter.get_optbinning_object(name)`
+
+Retrieve OptBinning objet for a given variable.
+
+###### Parameters
+
+| Name   | Type   | Description           | Default    |
+|--------|--------|-----------------------|------------|
+| `name` | str    | Name of the variable. | _required_ |
+
+##### plot { #targeter.targeter.Targeter.plot }
+
+`targeter.Targeter.plot(name, metric='event_rate', add_special=False, add_missing=True, style='bin', show_bin_labels=True, savefig=None)`
+
+Relation to target summary plot for one variable.
+
+This function is neraly a direct call of ``OptBinning`` :meth:`OptBinning.BinningTable.plot` method.
+
+###### Parameters
+
+| Name              | Type                         | Description                                                                                                                                                                                 | Default        |
+|-------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|
+| `name`            |                              | Name of the variable.                                                                                                                                                                       | _required_     |
+| `metric`          | (str, optional(default=woe)) | Supported metrics are "woe" to show the Weight of Evidence (WoE) measure and "event_rate" to show the event rate.  .. note::     Parameter ``metric`` has no effect for continuous targets. | `'event_rate'` |
+| `add_special`     | bool(default=False)          | Whether to add the special codes bin.                                                                                                                                                       | `False`        |
+| `add_missing`     | bool(default=True)           | Whether to add the special values bin.                                                                                                                                                      | `True`         |
+| `style`           | (str, optional(default=bin)) | Plot style. style="bin" shows the standard binning plot. If style="actual", show the plot with the actual scale, i.e, actual bin widths.                                                    | `'bin'`        |
+| `show_bin_labels` | bool(default=False)          | Whether to show the bin label instead of the bin id on the x-axis. For long labels (length > 27), labels are truncated.                                                                     | `True`         |
+| `savefig`         | str or None(default=None)    | Path to save the plot figure.                                                                                                                                                               | `None`         |
+
+##### report { #targeter.targeter.Targeter.report }
+
+`targeter.Targeter.report(out_directory='.', out_file='repport', template=None, out_format='html', filter='auto', filter_count_min=500, filter_n=20, force_var=None, delete_tmp=True)`
+
+Generate a report through Quarto engine.
+
+###### Parameters
+
+| Name               | Type                         | Description                                                                                                                                                                                                                                                                                                                                   | Default     |
+|--------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
+| `out_directory`    | (str, optional(default='.')) | Output directory.                                                                                                                                                                                                                                                                                                                             | `'.'`       |
+| `out_file`         |                              | Output file name, without extension                                                                                                                                                                                                                                                                                                           | `'repport'` |
+| `template`         |                              | Path to a template Quarto file. If None (default), report will be built using py-targeter provided template.                                                                                                                                                                                                                                  | `None`      |
+| `out_format`       |                              | Format of the report, one of "html", "word", "pdf". Note that pdf requires a LaTeX installation (see Quarto documentation)                                                                                                                                                                                                                    | `'html'`    |
+| `filter`           |                              | Value "auto" will select key variables using all metrics availables (union) if targeter object is not already filtered. To force a  (new) filter, one can use value "force". Any other value for  ``filter`` will result in doing nothing and using the full list of variables available in the report (potentially resulting in a big file). | `'auto'`    |
+| `filter_count_min` |                              | Parameter passed to ``filter`` methods. Avoid selecting modalities with high value for target average but with low frequencies (here by default less than 500 records).                                                                                                                                                                       | `500`       |
+| `filter_n`         |                              | When filtering before report, we call ``filter`` method for all available metrics, considering top ``filter_n`` variables and then ultimately taking the **union** of all selected variables. As such, report can contain more than ``filter_n`` variables.                                                                                   | `20`        |
+| `force_var`        |                              | Array-like list of strings containing names of variables we want to see in the report even if they wouldn't have been selected by a filter.                                                                                                                                                                                                   | `None`      |
+| `delete_tmp`       |                              | Should we delete everything in the temporary directory used by  ```report`` (parameter manly used by package developpers to debug).                                                                                                                                                                                                           | `True`      |
+
+###### Warnings
+
+Generating a report requires the system dependency of Quarto 
+(availibility not tested currently).
+
+##### save { #targeter.targeter.Targeter.save }
+
+`targeter.Targeter.save(path)`
+
+Save binning process to pickle file.
+
+###### Parameters
+
+| Name   | Type   | Description       | Default    |
+|--------|--------|-------------------|------------|
+| `path` | str    | Pickle file path. | _required_ |
+
+##### summary { #targeter.targeter.Targeter.summary }
+
+`targeter.Targeter.summary(include_labels=False)`
+
+Build a summary table
+
+###### Parameters
+
+| Name             | Type                             | Description                                                                                                                            | Default   |
+|------------------|----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|-----------|
+| `include_labels` | bool optional (default to False) | if object contains some metadata, do we use them to include labels in the output table? (recommended for  reports) - defaults to False | `False`   |
+
+
+.. note::    
+    Targeter summary tableconsists in an enriched version of  OptBinning
+    summary table.

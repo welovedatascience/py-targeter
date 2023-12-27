@@ -1,0 +1,11 @@
+# Function reference {.doc .doc-index}
+
+## Running EDA - targeter Class
+
+Main class Targeter that allows to run, store and manipulate a targeter 
+EDA analysis.
+
+
+| | |
+| --- | --- |
+| [targeter.Targeter](targeter.Targeter.qmd#targeter.targeter.Targeter) | targeter for automated EDA. |

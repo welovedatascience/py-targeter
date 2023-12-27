@@ -1,0 +1,64 @@
+project:
+  type: website
+  output-dir: _build
+  # resources:
+  #   - examples/single-page
+  #   - examples/pkgdown
+  #   - examples/auto-package
+
+metadata-files:
+  - api/_sidebar.yml
+
+filters:
+  - "interlinks"
+
+interlinks:
+  sources:
+    python:
+      url: https://docs.python.org/3/
+
+website:
+  title: "targeter"
+  page-navigation: true
+  navbar:
+    left:
+      - href: api/
+        text: Reference
+
+    right:
+      - icon: github
+        href: https://github.com/welovedatascience/py-targeter/
+
+  sidebar:
+    - id: get-started
+      title: Get Started
+      style: floating
+      align: left
+      contents:
+        - get-started/overview.qmd
+        - section: "Basic Use"
+          contents:
+            - get-started/basic-docs.qmd
+
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+quartodoc:
+  style: pkgdown
+  dir: api
+  package: targeter
+  render_interlinks: true
+  sidebar: "api/_sidebar.yml"
+  sections:
+    - title: Running EDA - targeter Class
+      desc: | 
+        Main class Targeter that allows to run, store and manipulate a targeter 
+        EDA analysis.
+
+      contents:
+        - targeter.Targeter

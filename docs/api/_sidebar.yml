@@ -1,0 +1,9 @@
+website:
+  sidebar:
+  - contents:
+    - api/index.qmd
+    - contents:
+      - api/targeter.Targeter.qmd
+      section: Running EDA - targeter Class
+    id: api
+  - id: dummy-sidebar

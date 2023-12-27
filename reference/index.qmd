@@ -1,0 +1,9 @@
+# Function reference {.doc .doc-index}
+
+## Main functions
+
+Functions to run an analysisdocstrings.
+
+| | |
+| --- | --- |
+| [targeter](targeter.qmd#targeter.targeter) | Target automated EDA with targeter |
