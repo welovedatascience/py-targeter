@@ -1,9 +1,9 @@
 # Function reference {.doc .doc-index}
 
-## Running EDA - targeter Class
+## Preparation Functions
 
-Main class Targeter that allows to run, store and manipulate a targeter 
-EDA analysis.
+These functions fetch and analyze Python objects, including parsing docstrings.
+They prepare a basic representation of your doc site that can be rendered and built.
 
 
 | | |

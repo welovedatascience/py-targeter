@@ -1,19 +1,18 @@
 project:
   type: website
   output-dir: _build
-  # resources:
-  #   - examples/single-page
-  #   - examples/pkgdown
-  #   - examples/auto-package
 
 metadata-files:
   - api/_sidebar.yml
 
 filters:
-  - "interlinks"
+  - interlinks
 
 interlinks:
+  fast: true
   sources:
+    numpy:
+      url: https://numpy.org/doc/stable/
     python:
       url: https://docs.python.org/3/
 
@@ -22,13 +21,11 @@ website:
   page-navigation: true
   navbar:
     left:
-      - href: api/
-        text: Reference
-
+      - file: get-started/overview.qmd
+        text: Get Started
     right:
       - icon: github
         href: https://github.com/welovedatascience/py-targeter/
-
   sidebar:
     - id: get-started
       title: Get Started
@@ -39,7 +36,6 @@ website:
         - section: "Basic Use"
           contents:
             - get-started/basic-docs.qmd
-
 
 format:
   html:
@@ -55,10 +51,9 @@ quartodoc:
   render_interlinks: true
   sidebar: "api/_sidebar.yml"
   sections:
-    - title: Running EDA - targeter Class
-      desc: | 
-        Main class Targeter that allows to run, store and manipulate a targeter 
-        EDA analysis.
-
+    - title: Preparation Functions
+      desc: |
+        These functions fetch and analyze Python objects, including parsing docstrings.
+        They prepare a basic representation of your doc site that can be rendered and built.
       contents:
         - targeter.Targeter

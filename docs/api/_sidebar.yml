@@ -4,6 +4,6 @@ website:
     - api/index.qmd
     - contents:
       - api/targeter.Targeter.qmd
-      section: Running EDA - targeter Class
+      section: Preparation Functions
     id: api
   - id: dummy-sidebar
